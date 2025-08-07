@@ -16,8 +16,17 @@ import {
 import { getAuthToken, getUserInfoFromToken } from '../config/auth';
 import SinistreService from '../services/sinistreService';
 import './ConsultationSinistres.css';
+import { Edit, FileCheck, FileX, FileQuestion, CheckCircle, Stethoscope } from 'lucide-react';
 
 const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
+
+  const DOCUMENT_BUTTONS = {
+  "3": { label: "Lettre de rejet", icon: FileX, color: "bg-red-600", type: "REJET" },
+  "4": { label: "Décompte", icon: FileCheck, color: "bg-green-600", type: "DECOMPTE" },
+  "6": { label: "Lettre complément", icon: FileQuestion, color: "bg-orange-500", type: "COMPLEMENT" },
+  "8": { label: "Convocation CV", icon: Stethoscope, color: "bg-purple-600", type: "CONTRE_VISITE" },
+  "11": { label: "Lettre d'accord", icon: CheckCircle, color: "bg-blue-600", type: "ACCORD" }};
+
   
   // État utilisateur pour affichage des informations
   const [userInfo, setUserInfo] = useState(null);
@@ -437,6 +446,35 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
       state: { sinistre }
     });
   };
+ 
+
+  const handleGenerateDocument = async (sinistre) => {
+  if (!sinistre || !sinistre.etatSinistre) return;
+
+  const config = DOCUMENT_BUTTONS[sinistre.etatSinistre];
+  if (!config) {
+    setError("Aucun document disponible pour cet état de sinistre.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const result = await SinistreService.genererDocumentSinistre(
+      sinistre.numPolice,
+      sinistre.numFiliale,
+      sinistre.numAffiliation,
+      sinistre.numSinistre
+    );
+
+    SinistreService.downloadBlob(result.blob, result.filename);
+  } catch (error) {
+    console.error("Erreur lors de la génération du document :", error);
+    setError("Échec de la génération du document.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ✅ Fonction pour nettoyer les messages d'erreur/succès après un délai
   useEffect(() => {
@@ -898,80 +936,92 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
             )}
           </div>
           
-          <div className="table-wrapper">
-            <table className="results-table" role="table" aria-label="Résultats des sinistres">
-              <thead>
-                <tr role="row">
-                  <th scope="col">N° Sinistre</th>
-                  <th scope="col">Assuré</th>
-                  <th scope="col">Date Survenance</th>
-                  <th scope="col">État</th>
-                  <th scope="col">Nature Maladie</th>
-                  <th scope="col">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {getCurrentPageResults().map((sinistre, index) => (
-                  <tr key={sinistre.numSinistre || `sinistre-${index}`} role="row">
-                    <td>
-                      <div className="cell-primary">
-                        {sinistre.numSinistreReduit || sinistre.numSinistre || 'N/A'}
-                      </div>
-                      {sinistre.numPolice && (
-                        <div className="cell-secondary">
-                          Police: {sinistre.numPolice}
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      <div className="cell-primary">
-                        {sinistre.nomCompletAssure || 'N/A'}
-                      </div>
-                      {sinistre.numAffiliation && (
-                        <div className="cell-secondary">
-                          Affiliation: {sinistre.numAffiliation}
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      <time dateTime={sinistre.dateSurv}>
-                        {formatDate(sinistre.dateSurv)}
-                      </time>
-                    </td>
-                    <td>
-                      <span className={`status-badge ${
-                        sinistre.etatSinistreLibelle === 'OUVERT' 
-                          ? 'status-open' 
-                          : sinistre.etatSinistreLibelle === 'CLÔTURÉ' || sinistre.etatSinistreLibelle === 'CLOTURE'
-                          ? 'status-closed'
-                          : sinistre.etatSinistreLibelle === 'EN COURS'
-                          ? 'status-progress'
-                          : 'status-default'
-                      }`}>
-                        {sinistre.etatSinistreLibelle || 'N/A'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="cell-truncate" title={sinistre.natuMala || sinistre.refSpecialiteMaladieLibelle || 'N/A'}>
-                        {sinistre.natuMala || sinistre.refSpecialiteMaladieLibelle || 'N/A'}
-                      </div>
-                    </td>
-                    <td>
-                      <button 
-                        onClick={() => handleViewDetails(sinistre)}
-                        className="btn btn-small btn-outline"
-                        aria-label={`Voir les détails du sinistre ${sinistre.numSinistre || 'N/A'}`}
-                        disabled={!sinistre.numSinistre}
-                      >
-                        <Eye className="btn-icon" />
-                        Détails
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+         <div className="table-wrapper">
+  <table className="results-table" role="table" aria-label="Résultats des sinistres">
+    <thead>
+      <tr role="row">
+        <th scope="col">N° Sinistre</th>
+        <th scope="col">Assuré</th>
+        <th scope="col">Date Survenance</th>
+        <th scope="col">État</th>
+        <th scope="col">Nature Maladie</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {getCurrentPageResults().map((sinistre, index) => (
+        <tr key={sinistre.numSinistre || `sinistre-${index}`} role="row">
+          <td>
+            <div className="cell-primary">
+              {sinistre.numSinistreReduit || sinistre.numSinistre || 'N/A'}
+            </div>
+            {sinistre.numPolice && (
+              <div className="cell-secondary">Police: {sinistre.numPolice}</div>
+            )}
+          </td>
+
+          <td>
+            <div className="cell-primary">{sinistre.nomCompletAssure || 'N/A'}</div>
+            {sinistre.numAffiliation && (
+              <div className="cell-secondary">Affiliation: {sinistre.numAffiliation}</div>
+            )}
+          </td>
+
+          <td>
+            <time dateTime={sinistre.dateSurv}>
+              {formatDate(sinistre.dateSurv)}
+            </time>
+          </td>
+
+          <td>
+            <span className={`status-badge ${
+              sinistre.etatSinistreLibelle === 'OUVERT' 
+                ? 'status-open' 
+                : sinistre.etatSinistreLibelle === 'CLÔTURÉ' || sinistre.etatSinistreLibelle === 'CLOTURE'
+                ? 'status-closed'
+                : sinistre.etatSinistreLibelle === 'EN COURS'
+                ? 'status-progress'
+                : 'status-default'
+            }`}>
+              {sinistre.etatSinistreLibelle || 'N/A'}
+            </span>
+          </td>
+
+          <td>
+            <div className="cell-truncate" title={sinistre.natuMala || sinistre.refSpecialiteMaladieLibelle || 'N/A'}>
+              {sinistre.natuMala || sinistre.refSpecialiteMaladieLibelle || 'N/A'}
+            </div>
+          </td>
+
+          <td className="action-buttons">
+            <button 
+              onClick={() => handleViewDetails(sinistre)}
+              className="btn btn-small btn-outline"
+              aria-label={`Voir les détails du sinistre ${sinistre.numSinistre || 'N/A'}`}
+            >
+              <Eye className="btn-icon" />
+              Détails
+            </button>
+
+            {DOCUMENT_BUTTONS[sinistre.etatSinistre] && (
+              <button 
+                onClick={() => handleGenerateDocument(sinistre)}
+                className={`btn btn-small text-white ml-2 ${DOCUMENT_BUTTONS[sinistre.etatSinistre].color}`}
+                aria-label={DOCUMENT_BUTTONS[sinistre.etatSinistre].label}
+              >
+                {React.createElement(DOCUMENT_BUTTONS[sinistre.etatSinistre].icon, {
+                  className: 'btn-icon'
+                })}
+                {DOCUMENT_BUTTONS[sinistre.etatSinistre].label}
+              </button>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
 
           {totalPages > 1 && (
             <div className="pagination-container">

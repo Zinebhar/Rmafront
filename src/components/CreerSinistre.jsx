@@ -22,8 +22,17 @@ import { useNavigate } from 'react-router-dom';
 import SinistreService from '../services/sinistreService';
 import './CreerSinistre.css';
 
+import { getAuthToken } from '../config/auth';
+
+const formatDateToDDMMYYYY = (isoDate) => {
+  if (!isoDate) return '';
+  const [year, month, day] = isoDate.split('-');
+  return `${day}/${month}/${year}`;
+};
+
 const CreerSinistre = ({ sidebarCollapsed = false }) => {
   const navigate = useNavigate();
+  const [fichier, setFichier] = useState(null);
   const [typesDeclaration, setTypesDeclaration] = useState([]);
   const [loadingTypes, setLoadingTypes] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -156,77 +165,76 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      setError('Veuillez corriger les erreurs dans le formulaire');
-      return;
+  e.preventDefault();
+
+  if (!validateForm()) {
+    setError('Veuillez corriger les erreurs dans le formulaire');
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    const dataToSend = {
+      ...formData,
+      dateSurv: formatDateToDDMMYYYY(formData.dateSurv),
+    };
+
+    if (formData.dateDecl.trim()) {
+      dataToSend.dateDecl = formatDateToDDMMYYYY(formData.dateDecl);
+    }
+    if (formData.dateOuve.trim()) {
+      dataToSend.dateOuve = formatDateToDDMMYYYY(formData.dateOuve);
     }
 
-    try {
-      setLoading(true);
-      setError('');
-      setSuccess('');
-      
-      console.log('🚀 Création du sinistre avec:', formData);
-      
-      const dataToSend = {};
-      
-      dataToSend.numPolice = formData.numPolice.trim();
-      dataToSend.numAffiliation = formData.numAffiliation.trim();
-      dataToSend.codeDecl = formData.codeDecl.trim();
-      dataToSend.dateSurv = formData.dateSurv.trim();
-      
-      if (formData.dateDecl.trim()) dataToSend.dateDecl = formData.dateDecl.trim();
-      if (formData.montoFe.trim()) dataToSend.montoFe = formData.montoFe.trim();
-      if (formData.refExtSi.trim()) dataToSend.refExtSi = formData.refExtSi.trim();
-      if (formData.natuMala.trim()) dataToSend.natuMala = formData.natuMala.trim();
-      
-      if (formData.numFiliale.trim()) dataToSend.numFiliale = formData.numFiliale.trim();
-      if (formData.numCompl.trim()) dataToSend.numCompl = formData.numCompl.trim();
-      if (formData.lieParbe.trim()) dataToSend.lieParbe = formData.lieParbe.trim();
-      if (formData.numOrdre.trim()) dataToSend.numOrdre = formData.numOrdre.trim();
-      if (formData.codeSpeMa.trim()) dataToSend.codeSpeMa = formData.codeSpeMa.trim();
-      if (formData.codeClin.trim()) dataToSend.codeClin = formData.codeClin.trim();
-      if (formData.codeMede.trim()) dataToSend.codeMede = formData.codeMede.trim();
-      if (formData.dateOuve.trim()) dataToSend.dateOuve = formData.dateOuve.trim();
-      if (formData.monAvaSi.trim()) dataToSend.monAvaSi = formData.monAvaSi.trim();
-      if (formData.dossTran.trim()) dataToSend.dossTran = formData.dossTran.trim();
-      if (formData.obbseSini.trim()) dataToSend.obbseSini = formData.obbseSini.trim();
-      
-      if (formData.fausDecl !== 'false') dataToSend.fausDecl = formData.fausDecl;
-      if (formData.siniArch !== 'false') dataToSend.siniArch = formData.siniArch;
-      
-      console.log('📤 Données envoyées au backend:', dataToSend);
-      
-      console.log('🔍 DEBUGGING DÉTAILLÉ:');
-      console.log('- Numéro Police:', `"${dataToSend.numPolice}"`);
-      console.log('- Numéro Affiliation:', `"${dataToSend.numAffiliation}"`);
-      console.log('- Code Déclaration:', `"${dataToSend.codeDecl}"`);
-      console.log('- Date Survenance:', `"${dataToSend.dateSurv}"`);
-      if (dataToSend.montoFe) console.log('- Montant FE:', `"${dataToSend.montoFe}"`);
-      
-      const response = await SinistreService.creerSinistreSansLot(dataToSend);
-      
-      console.log('✅ Sinistre créé:', response);
-      
-      setSuccess(`Sinistre créé avec succès ! Numéro: ${response.data[0]?.numSinistre || 'N/A'}`);
-      
-      setTimeout(() => {
-        if (response.data[0]?.numSinistre) {
-          navigate(`/consultation/sinistres/${response.data[0].numSinistre}/details`);
-        } else {
-          navigate('/consultation/sinistres');
-        }
-      }, 2000);
-      
-    } catch (error) {
-      console.error('❌ Erreur lors de la création:', error);
-      setError(SinistreService.handleAPIError(error));
-    } finally {
-      setLoading(false);
+    const formToSend = new FormData();
+    formToSend.append(
+      'sinistre',
+      new Blob([JSON.stringify(dataToSend)], { type: 'application/json' })
+    );
+    if (fichier) formToSend.append('fichier', fichier);
+
+    const response = await fetch(
+      'http://localhost:9999/rest/api/v1/consultation/sinistres/creer-sans-lot',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+        body: formToSend,
+      }
+    );
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Erreur HTTP ${response.status} : ${text}`);
     }
-  };
+
+    const result = await response.json();
+    setSuccess(
+      `Sinistre créé avec succès ! Numéro: ${result.data[0]?.numSinistre || 'N/A'}`
+    );
+
+    setTimeout(() => {
+      if (result.data[0]?.numSinistre) {
+        navigate(`/consultation/sinistres/${result.data[0].numSinistre}/details`);
+      } else {
+        navigate('/consultation/sinistres');
+      }
+    }, 2000);
+  } catch (error) {
+    console.error('❌ Erreur lors de la création:', error);
+    setError(SinistreService.handleAPIError(error));
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+      
+
 
   const resetForm = () => {
     setFormData({
@@ -670,6 +678,15 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
             />
           </ExpandableCard>
         </div>
+          <div className="input-field">
+            <label className="input-label">Importer un fichier PDF (facultatif)</label>
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setFichier(e.target.files[0])}
+              className="input-control"
+            />
+          </div>
 
         <div className="form-actions">
           <button 

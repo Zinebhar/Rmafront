@@ -1,151 +1,171 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Menu,
-  Home,
-  Users,
-  FileText,
-  Search,
-  ChevronDown,
-  ChevronRight,
-  Layers,
-  Plus
+  Menu, Home, FileText, Search, Users, Folder, Plus,
+  ChevronDown, ChevronRight, Layers
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import './RMASidebar.css'; // Importe le fichier CSS
-
-const LOCAL_STORAGE_KEY = 'rma-sidebar-collapsed';
+import './RMASidebar.css';
 
 const RMASidebar = ({ isCollapsed: externalIsCollapsed, onToggle }) => {
-  // Important : useState DOIT être à l’intérieur du composant
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-    // Si localStorage présent, convertit string en booléen
-    if (stored !== null) return stored === 'true';
-    // Sinon, sidebar fermée par défaut
-    return true;
-  });
-
-  const [activeItem, setActiveItem] = useState('search-sinistre');
-  const [expandedMenus, setExpandedMenus] = useState(['sinistre']);
+  const [isCollapsed, setIsCollapsed] = useState(externalIsCollapsed || false);
+  const [activeItem, setActiveItem] = useState('');
+  const [expandedMenus, setExpandedMenus] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Synchronise avec la prop externe si fournie
   useEffect(() => {
     if (typeof externalIsCollapsed === 'boolean') {
       setIsCollapsed(externalIsCollapsed);
-      localStorage.setItem(LOCAL_STORAGE_KEY, externalIsCollapsed);
     }
   }, [externalIsCollapsed]);
-
-  // Met à jour l'item actif et menus ouverts selon URL
-  useEffect(() => {
-    const pathname = location.pathname;
-
-    if (pathname.includes('/consultation/sinistres/creer')) {
-      setActiveItem('creer-sinistre');
-      if (!expandedMenus.includes('sinistre')) {
-        setExpandedMenus(prev => [...prev, 'sinistre']);
-      }
-    } else if (pathname.includes('/consultation/sinistres')) {
-      setActiveItem('search-sinistre');
-      if (!expandedMenus.includes('sinistre')) {
-        setExpandedMenus(prev => [...prev, 'sinistre']);
-      }
-    } else if (pathname.includes('/lots/creation')) {
-      setActiveItem('create-lot');
-      if (!expandedMenus.includes('lot')) {
-        setExpandedMenus(prev => [...prev, 'lot']);
-      }
-    } else if (pathname.includes('/lots')) {
-      setActiveItem('search-lot');
-      if (!expandedMenus.includes('lot')) {
-        setExpandedMenus(prev => [...prev, 'lot']);
-      }
-    }
-  }, [location.pathname, expandedMenus]);
-
-  const menuItems = [
-    {
-      id: 'home',
-      label: 'Accueil',
-      icon: Home,
-      href: '/sante'
-    },
-    {
-      id: 'sinistre',
-      label: 'Sinistre',
-      icon: Users,
-      isExpandable: true,
-      subItems: [
-        {
-          id: 'search-sinistre',
-          label: 'Rechercher sinistre',
-          icon: Search,
-          href: '/consultation/sinistres'
-        },
-        {
-          id: 'creer-sinistre',
-          label: 'Créer sinistre',
-          icon: Plus,
-          href: '/consultation/sinistres/creer'
-        }
-      ]
-    },
-    {
-      id: 'lot',
-      label: 'Lots',
-      icon: Layers,
-      isExpandable: true,
-      subItems: [
-        {
-          id: 'search-lot',
-          label: 'Rechercher lot',
-          icon: Search,
-          href: '/lots'
-        },
-        {
-          id: 'create-lot',
-          label: 'Créer lot',
-          icon: FileText,
-          href: '/lots/creation'
-        }
-      ]
-    },
-    {
-      id: 'documents',
-      label: 'Documents',
-      icon: FileText,
-      href: '/documents'
-    }
-  ];
 
   const toggleSidebar = () => {
     const newCollapsed = !isCollapsed;
     setIsCollapsed(newCollapsed);
-    localStorage.setItem(LOCAL_STORAGE_KEY, newCollapsed);
     if (onToggle) onToggle(newCollapsed);
   };
 
-  const handleItemClick = (itemId, href) => {
-    const menu = menuItems.find(item => item.id === itemId);
+  const isMenuExpanded = (id) => expandedMenus.includes(id);
 
-    if (menu?.isExpandable) {
-      setExpandedMenus(prev =>
-        prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
-      );
-    } else {
-      setActiveItem(itemId);
-      if (href) navigate(href);
-    }
+  const handleToggle = (id) => {
+    setExpandedMenus((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
   };
 
-  const handleSubItemClick = (subItemId, href) => {
-    setActiveItem(subItemId);
+  const handleNavigate = (id, href) => {
+    setActiveItem(id);
     if (href) navigate(href);
   };
 
-  const isMenuExpanded = menuId => expandedMenus.includes(menuId);
+  const menu = [
+    {
+      id: 'home',
+      label: 'Accueil',
+      icon: Home,
+      href: '/dashboard'
+    },
+    {
+      id: 'e-floote',
+      label: 'e-Floote',
+      icon: FileText,
+      href: '/e-floote'
+    },
+    {
+      id: 'e-epargne',
+      label: 'e-Epargne',
+      icon: FileText,
+      href: '/e-epargne'
+    },
+    {
+      id: 'e-sante',
+      label: 'e-Santé',
+      icon: Users,
+      isExpandable: true,
+      subItems: [
+        {
+          id: 'mes-contrats',
+          label: 'Mes Contrats',
+          icon: FileText,
+          href: '/sante/contrats'
+        },
+        {
+          id: 'gestion-adhesion',
+          label: 'Gestion Adhésion',
+          icon: FileText,
+          href: '/sante/adhesion'
+        },
+        {
+          id: 'dossier-maladie',
+          label: 'Dossier Maladie',
+          icon: Folder,
+          isExpandable: true,
+          subItems: [
+            {
+              id: 'search-sinistre',
+              label: 'Rechercher Sinistre',
+              icon: Search,
+              href: '/consultation/sinistres'
+            },
+            {
+              id: 'creer-sinistre',
+              label: 'Créer Sinistre',
+              icon: Plus,
+              href: '/consultation/sinistres/creer'
+            },
+            {
+              id: 'search-lot',
+              label: 'Rechercher Lot',
+              icon: Search,
+              href: '/lots'
+            },
+            {
+              id: 'create-lot',
+              label: 'Créer Lot',
+              icon: FileText,
+              href: '/lots/creation'
+            }
+          ]
+        },
+        {
+          id: 'edition',
+          label: 'Édition',
+          icon: FileText,
+          href: '/sante/edition'
+        }
+      ]
+    },
+    {
+      id: 'e-at',
+      label: 'e-AT',
+      icon: FileText,
+      href: '/e-at'
+    },
+    {
+      id: 'e-iard',
+      label: 'e-IARD',
+      icon: FileText,
+      href: '/e-iard'
+    }
+  ];
+
+  const renderMenu = (items, depth = 0) => (
+    <ul className={depth === 0 ? 'rma-sidebar-menu' : 'rma-sidebar-submenu'}>
+      {items.map(item => {
+        const Icon = item.icon;
+        const expanded = isMenuExpanded(item.id);
+
+        return (
+          <li key={item.id} className={depth === 0 ? 'rma-sidebar-item' : 'rma-sidebar-subitem'}>
+            <a
+              href={item.href || '#'}
+              className={`${depth === 0 ? 'rma-sidebar-link' : 'rma-sidebar-sublink'} ${activeItem === item.id ? 'active' : ''}`}
+              onClick={(e) => {
+                e.preventDefault();
+                item.isExpandable
+                  ? handleToggle(item.id)
+                  : handleNavigate(item.id, item.href);
+              }}
+              title={isCollapsed ? item.label : ''}
+            >
+              {Icon && <Icon size={depth === 0 ? 20 : 16} />}
+              {!isCollapsed && (
+                <>
+                  <span className={depth === 0 ? 'rma-sidebar-label' : 'rma-sidebar-sublabel'}>{item.label}</span>
+                  {item.isExpandable && (
+                    <div className="rma-sidebar-arrow">
+                      {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    </div>
+                  )}
+                </>
+              )}
+            </a>
+            {item.subItems && expanded && !isCollapsed && renderMenu(item.subItems, depth + 1)}
+          </li>
+        );
+      })}
+    </ul>
+  );
 
   return (
     <div className={`rma-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
@@ -154,63 +174,8 @@ const RMASidebar = ({ isCollapsed: externalIsCollapsed, onToggle }) => {
           <Menu size={20} />
         </button>
       </div>
-
       <nav className="rma-sidebar-nav">
-        <ul className="rma-sidebar-menu">
-          {menuItems.map(item => {
-            const IconComponent = item.icon;
-            const isExpanded = isMenuExpanded(item.id);
-
-            return (
-              <li key={item.id} className="rma-sidebar-item">
-                <a
-                  href={item.href || '#'}
-                  className={`rma-sidebar-link ${activeItem === item.id ? 'active' : ''}`}
-                  onClick={e => {
-                    e.preventDefault();
-                    handleItemClick(item.id, item.href);
-                  }}
-                  title={isCollapsed ? item.label : ''}
-                >
-                  <IconComponent size={20} />
-                  {!isCollapsed && (
-                    <>
-                      <span className="rma-sidebar-label">{item.label}</span>
-                      {item.isExpandable && (
-                        <div className="rma-sidebar-arrow">
-                          {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </a>
-
-                {item.subItems && isExpanded && !isCollapsed && (
-                  <ul className="rma-sidebar-submenu">
-                    {item.subItems.map(subItem => {
-                      const SubIconComponent = subItem.icon;
-                      return (
-                        <li key={subItem.id} className="rma-sidebar-subitem">
-                          <a
-                            href={subItem.href}
-                            className={`rma-sidebar-sublink ${activeItem === subItem.id ? 'active' : ''}`}
-                            onClick={e => {
-                              e.preventDefault();
-                              handleSubItemClick(subItem.id, subItem.href);
-                            }}
-                          >
-                            <SubIconComponent size={16} />
-                            <span className="rma-sidebar-sublabel">{subItem.label}</span>
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        {renderMenu(menu)}
       </nav>
     </div>
   );

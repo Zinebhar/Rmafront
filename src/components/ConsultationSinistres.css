@@ -489,6 +489,7 @@
   grid-column: span 2; 
 }
 
+
 /* ✅ SECTION BOUTONS D'ACTION - CORRECTION FINALE DU DÉCALAGE */
 .form-actions {
   display: flex !important;
