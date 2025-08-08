@@ -6,7 +6,7 @@ import { getAuthToken, isTokenValid, clearAuthToken } from '../config/auth';
  * Instance Axios configurée pour l'API des lots
  */
 const api = axios.create({
-  baseURL: 'http://localhost:9999/rest/api/lots',
+  baseURL: 'http://localhost:8089/rest/api/lots',
   timeout: 1000000, // Timeout de 10 secondes
   headers: {
     'Content-Type': 'application/json',

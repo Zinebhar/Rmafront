@@ -3,7 +3,7 @@ import {
   Menu, Home, FileText, Search, Users, Folder, Plus,
   ChevronDown, ChevronRight, Layers
 } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import './RMASidebar.css';
 
 const RMASidebar = ({ isCollapsed: externalIsCollapsed, onToggle }) => {
@@ -11,7 +11,7 @@ const RMASidebar = ({ isCollapsed: externalIsCollapsed, onToggle }) => {
   const [activeItem, setActiveItem] = useState('');
   const [expandedMenus, setExpandedMenus] = useState([]);
   const navigate = useNavigate();
-  const location = useLocation();
+  
 
   useEffect(() => {
     if (typeof externalIsCollapsed === 'boolean') {
@@ -43,7 +43,7 @@ const RMASidebar = ({ isCollapsed: externalIsCollapsed, onToggle }) => {
       id: 'home',
       label: 'Accueil',
       icon: Home,
-      href: '/dashboard'
+      href: '/sante'
     },
     {
       id: 'e-floote',

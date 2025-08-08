@@ -497,7 +497,52 @@
 svg {
   background: none !important;
 }
+/* AJOUTEZ ce CSS à votre fichier DetailsSinistre.css */
 
+/* Conteneur pour info de modification désactivée */
+.modification-disabled-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Bouton désactivé */
+.btn-disabled {
+  background-color: #e5e7eb !important;
+  color: #9ca3af !important;
+  cursor: not-allowed;
+  border-color: #d1d5db !important;
+  opacity: 0.6;
+}
+
+.btn-disabled:hover {
+  background-color: #e5e7eb !important;
+  color: #9ca3af !important;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Texte d'aide */
+.help-text {
+  font-size: 11px;
+  color: #6b7280;
+  text-align: center;
+  font-style: italic;
+  max-width: 120px;
+  line-height: 1.2;
+}
+
+/* Responsive pour petits écrans */
+@media (max-width: 768px) {
+  .modification-disabled-info {
+    width: 100%;
+  }
+  
+  .help-text {
+    max-width: none;
+  }
+}
 /* Media queries pour la responsivité mobile */
 @media (max-width: 1024px) {
   .details-grid {

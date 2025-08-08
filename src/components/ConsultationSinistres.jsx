@@ -115,7 +115,7 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
     if (trimmedInput.length === 0) return false;
     
     // Validation basique pour éviter les caractères dangereux
-    const dangerousChars = /[<>'";&\\]/;
+    const dangerousChars = /[<>";&\\]/;
     if (dangerousChars.test(trimmedInput)) {
       setError(`Caractères non autorisés dans ${fieldName}`);
       return false;
@@ -448,12 +448,26 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
   };
  
 
-  const handleGenerateDocument = async (sinistre) => {
-  if (!sinistre || !sinistre.etatSinistre) return;
+  // REMPLACEZ votre fonction handleGenerateDocument par celle-ci :
+
+const handleGenerateDocument = async (sinistre) => {
+  if (!sinistre || !sinistre.etatSinistre) {
+    setError("Impossible de déterminer l'état du sinistre.");
+    return;
+  }
 
   const config = DOCUMENT_BUTTONS[sinistre.etatSinistre];
   if (!config) {
-    setError("Aucun document disponible pour cet état de sinistre.");
+    // Message amélioré avec l'état actuel
+    const etatActuel = sinistre.etatSinistreLibelle || `État ${sinistre.etatSinistre}`;
+    setError(`❌ Aucun document disponible pour l'état "${etatActuel}".
+    
+📋 Documents disponibles uniquement pour :
+• Réglé → Décompte PDF
+• Rejeté → Lettre de rejet PDF  
+• En attente facture définitive → Lettre d'accord PDF
+• En attente complément d'information → Lettre CI PDF
+• En attente contre-visite → Convocation CV PDF`);
     return;
   }
 
@@ -462,20 +476,60 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
 
     const result = await SinistreService.genererDocumentSinistre(
       sinistre.numPolice,
-      sinistre.numFiliale,
+      sinistre.numFiliale || "00",
       sinistre.numAffiliation,
       sinistre.numSinistre
     );
 
     SinistreService.downloadBlob(result.blob, result.filename);
+    setSuccessMessage(`${config.label} généré(e) avec succès`);
   } catch (error) {
     console.error("Erreur lors de la génération du document :", error);
-    setError("Échec de la génération du document.");
+    
+    // Utilisation du message d'erreur du backend (qui est déjà très détaillé)
+    setError(error.message);
   } finally {
     setLoading(false);
   }
 };
-
+const getStatusClass = (etatLibelle, etatId) => {
+  if (!etatLibelle && !etatId) return 'status-default';
+  
+  const libelle = etatLibelle?.toUpperCase() || '';
+  
+  // États basés sur le libellé
+  if (libelle.includes('OUVERT')) return 'status-open';
+  if (libelle.includes('RÉGLÉ') || libelle.includes('REGLE')) return 'status-closed';
+  if (libelle.includes('REJETÉ') || libelle.includes('REJETE')) return 'status-closed';
+  if (libelle.includes('EN COURS') || libelle.includes('CHIFFRAGE')) return 'status-progress';
+  if (libelle.includes('MÉDICAL') || libelle.includes('MEDICAL') || libelle.includes('CONTRE VISITE')) return 'status-medical';
+  if (libelle.includes('ANNULÉ') || libelle.includes('ANNULE') || libelle.includes('SANS SUITE')) return 'status-cancelled';
+  if (libelle.includes('MIGRÉ') || libelle.includes('MIGRE')) return 'status-migrated';
+  if (libelle.includes('ATTENTE') || libelle.includes('COMPLÉMENT') || libelle.includes('COMPLEMENT')) return 'status-pending';
+  if (libelle.includes('PARTIEL')) return 'status-partial';
+  
+  // États basés sur l'ID (fallback)
+  if (etatId) {
+    switch(etatId.toString()) {
+      case '1': return 'status-open';
+      case '2': return 'status-progress';
+      case '3': return 'status-closed';
+      case '4': return 'status-closed';
+      case '5': return 'status-cancelled';
+      case '6': case '7': case '12': case '13': return 'status-pending';
+      case '8': return 'status-medical';
+      case '9': case '10': return 'status-progress';
+      case '11': return 'status-pending';
+      case '14': case '16': return 'status-cancelled';
+      case '15': return 'status-partial';
+      case '17': case '18': case '19': return 'status-pending';
+      case '20': return 'status-migrated';
+      default: return 'status-default';
+    }
+  }
+  
+  return 'status-default';
+};
   // ✅ Fonction pour nettoyer les messages d'erreur/succès après un délai
   useEffect(() => {
     if (error || successMessage) {
@@ -573,8 +627,8 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
             value={searchParams.etatSinistre}
             onChange={(e) => {
               // Convertir l'affichage avec accent en valeur sans accent
-              const value = e.target.value === "En attente de complement d\'information" 
-                ? "En attente de complement d\'information" 
+              const value = e.target.value === "En attente de complement d'information" 
+                ? "En attente de complement d'information" 
                 : e.target.value;
               setSearchParams({...searchParams, etatSinistre: value});
             }}
@@ -974,18 +1028,10 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
           </td>
 
           <td>
-            <span className={`status-badge ${
-              sinistre.etatSinistreLibelle === 'OUVERT' 
-                ? 'status-open' 
-                : sinistre.etatSinistreLibelle === 'CLÔTURÉ' || sinistre.etatSinistreLibelle === 'CLOTURE'
-                ? 'status-closed'
-                : sinistre.etatSinistreLibelle === 'EN COURS'
-                ? 'status-progress'
-                : 'status-default'
-            }`}>
-              {sinistre.etatSinistreLibelle || 'N/A'}
-            </span>
-          </td>
+  <span className={`status-badge ${getStatusClass(sinistre.etatSinistreLibelle, sinistre.etatSinistre)}`}>
+    {sinistre.etatSinistreLibelle || 'N/A'}
+  </span>
+</td>
 
           <td>
             <div className="cell-truncate" title={sinistre.natuMala || sinistre.refSpecialiteMaladieLibelle || 'N/A'}>

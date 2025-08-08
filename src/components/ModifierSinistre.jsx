@@ -66,105 +66,6 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
     loadTypesDeclaration();
   }, []);
 
-  const getFieldPermissions = (etatSinistre) => {
-    const etat = etatSinistre?.toUpperCase();
-    
-    const etatsAbsolumentInterdits = ['REGLE', 'REJETE', 'ANNULE', 'SANS_SUITE', 'MIGRE', 'RÉGLÉ', 'REJETÉ', 'ANNULÉ'];
-    
-    if (etatsAbsolumentInterdits.some(etatInterdit => etat?.includes(etatInterdit))) {
-      return {
-        codeDecl: { allowed: false, warning: false },
-        dateSurv: { allowed: false, warning: false },
-        dateDecl: { allowed: false, warning: false },
-        montoFe: { allowed: false, warning: false },
-        refExtSi: { allowed: false, warning: false },
-        natuMala: { allowed: false, warning: false },
-        actions: etat?.includes('MIGR') ? 'Consultation' : 'Réouverture'
-      };
-    }
-    
-    const permissions = {
-      OUVERT: {
-        codeDecl: { allowed: true, warning: false },
-        dateSurv: { allowed: true, warning: false },
-        dateDecl: { allowed: true, warning: false },
-        montoFe: { allowed: true, warning: false },
-        refExtSi: { allowed: true, warning: false },
-        natuMala: { allowed: true, warning: false },
-        actions: 'Toutes'
-      },
-      
-      EN_ATTENTE_COMPLEMENT: {
-        codeDecl: { allowed: true, warning: false },
-        dateSurv: { allowed: true, warning: false },
-        dateDecl: { allowed: true, warning: false },
-        montoFe: { allowed: true, warning: false },
-        refExtSi: { allowed: true, warning: false },
-        natuMala: { allowed: true, warning: false },
-        actions: 'Toutes'
-      },
-      
-      EN_COURS_CHIFFRAGE: {
-        codeDecl: { allowed: true, warning: true },
-        dateSurv: { allowed: true, warning: false },
-        dateDecl: { allowed: true, warning: false },
-        montoFe: { allowed: true, warning: false },
-        refExtSi: { allowed: true, warning: false },
-        natuMala: { allowed: true, warning: false },
-        actions: 'Limitées'
-      },
-      
-      EN_ATTENTE_FACTURE: {
-        codeDecl: { allowed: false, warning: false },
-        dateSurv: { allowed: false, warning: false },
-        dateDecl: { allowed: true, warning: false },
-        montoFe: { allowed: false, warning: false },
-        refExtSi: { allowed: true, warning: false },
-        natuMala: { allowed: true, warning: false },
-        actions: 'Admin seul'
-      },
-      
-      EN_ATTENTE_CM: {
-        codeDecl: { allowed: false, warning: false },
-        dateSurv: { allowed: false, warning: false },
-        dateDecl: { allowed: true, warning: false },
-        montoFe: { allowed: false, warning: false },
-        refExtSi: { allowed: true, warning: false },
-        natuMala: { allowed: true, warning: true },
-        actions: 'Admin seul'
-      }
-    };
-
-    return permissions[etat] || permissions.OUVERT;
-  };
-
-  const canModifySinistre = (etatSinistre) => {
-    const etat = etatSinistre?.toUpperCase();
-    
-    const etatsNonModifiables = ['REGLE', 'REJETE', 'ANNULE', 'SANS_SUITE', 'MIGRE', 'RÉGLÉ', 'REJETÉ', 'ANNULÉ'];
-    
-    const estInterdit = etatsNonModifiables.some(etatInterdit => 
-      etat?.includes(etatInterdit) || etat === etatInterdit
-    );
-    
-    if (estInterdit) {
-      console.log('🚨 État non modifiable détecté:', etat);
-      return false;
-    }
-    
-    return true;
-  };
-
-  const isFieldDisabled = (fieldName) => {
-    const permissions = getFieldPermissions(formData.etatSinistreLibelle);
-    return !permissions[fieldName]?.allowed;
-  };
-
-  const hasFieldWarning = (fieldName) => {
-    const permissions = getFieldPermissions(formData.etatSinistreLibelle);
-    return permissions[fieldName]?.warning || false;
-  };
-
   useEffect(() => {
     const loadSinistreDetails = async () => {
       try {
@@ -193,27 +94,6 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
           etatSinistreLibelle: sinistre.etatSinistreLibelle || ''
         });
         
-        if (!canModifySinistre(sinistre.etatSinistreLibelle)) {
-          const etat = sinistre.etatSinistreLibelle?.toUpperCase();
-          let message = '';
-          
-          if (['REGLE', 'RÉGLÉ'].some(e => etat?.includes(e))) {
-            message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${sinistre.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-          } else if (['REJETE', 'REJETÉ'].some(e => etat?.includes(e))) {
-            message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${sinistre.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-          } else if (['ANNULE', 'ANNULÉ'].some(e => etat?.includes(e))) {
-            message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${sinistre.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-          } else if (etat?.includes('SANS_SUITE')) {
-            message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${sinistre.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-          } else if (etat?.includes('MIGR')) {
-            message = `Vous n'avez pas le droit de modifier ce sinistre car il est migré. Consultation uniquement autorisée.`;
-          } else {
-            message = `Ce sinistre ne peut pas être modifié car il est à l'état "${sinistre.etatSinistreLibelle}".`;
-          }
-          
-          setError(message);
-        }
-        
       } catch (error) {
         console.error('Erreur lors du chargement:', error);
         setError(SinistreService.handleAPIError(error));
@@ -228,10 +108,6 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
   }, [numSinistre]);
 
   const handleInputChange = (field, value) => {
-    if (isFieldDisabled(field)) {
-      return; 
-    }
-
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -251,126 +127,50 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
   const validateForm = () => {
     const errors = {};
     
-    if (!canModifySinistre(formData.etatSinistreLibelle)) {
-      const etat = formData.etatSinistreLibelle?.toUpperCase();
+    // Validation du code de déclaration
+    if (!formData.codeDecl || !formData.codeDecl.trim()) {
+      errors.codeDecl = 'Le type de déclaration est obligatoire';
+    }
+    
+    // Validation de la date de survenance
+    if (!formData.dateSurv || !formData.dateSurv.trim()) {
+      errors.dateSurv = 'La date de survenance est obligatoire';
+    }
+    
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (formData.dateSurv && !dateRegex.test(formData.dateSurv)) {
+      errors.dateSurv = 'Format de date invalide (AAAA-MM-JJ)';
+    }
+    
+    if (formData.dateSurv) {
+      const dateSurv = new Date(formData.dateSurv);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
       
-      let message = '';
-      if (['REGLE', 'RÉGLÉ'].some(e => etat?.includes(e))) {
-        message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-      } else if (['REJETE', 'REJETÉ'].some(e => etat?.includes(e))) {
-        message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-      } else if (['ANNULE', 'ANNULÉ'].some(e => etat?.includes(e))) {
-        message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-      } else if (etat?.includes('SANS_SUITE')) {
-        message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-      } else if (etat?.includes('MIGR')) {
-        message = `Vous n'avez pas le droit de modifier ce sinistre car il est migré. Consultation uniquement autorisée.`;
-      } else {
-        message = `Ce sinistre ne peut pas être modifié car il est à l'état "${formData.etatSinistreLibelle}".`;
+      if (dateSurv > today) {
+        errors.dateSurv = 'La date de survenance ne peut pas être dans le futur';
       }
+    }
+    
+    // Validation de la date de déclaration
+    if (formData.dateDecl && formData.dateDecl.trim() && !dateRegex.test(formData.dateDecl)) {
+      errors.dateDecl = 'Format de date invalide (AAAA-MM-JJ)';
+    }
+    
+    if (formData.dateSurv && formData.dateDecl) {
+      const dateSurv = new Date(formData.dateSurv);
+      const dateDecl = new Date(formData.dateDecl);
       
-      errors.global = message;
-      setValidation(errors);
-      return false;
-    }
-    
-    const permissions = getFieldPermissions(formData.etatSinistreLibelle);
-    
-    if (!permissions.codeDecl.allowed) {
-      if (formData.codeDecl !== (sinistreOriginal?.codeDecl || '')) {
-        if (formData.etatSinistreLibelle?.toLowerCase().includes('facture')) {
-          errors.codeDecl = `Vous n'avez pas le droit de modifier le type de déclaration car le sinistre est en attente de facture.`;
-        } else if (formData.etatSinistreLibelle?.toLowerCase().includes('cm')) {
-          errors.codeDecl = `Vous n'avez pas le droit de modifier le type de déclaration car le sinistre est en attente de commission médicale.`;
-        } else {
-          errors.codeDecl = `Vous n'avez pas le droit de modifier le type de déclaration car le sinistre est ${formData.etatSinistreLibelle.toLowerCase()}.`;
-        }
-      }
-    } else {
-      if (!formData.codeDecl || !formData.codeDecl.trim()) {
-        errors.codeDecl = 'Le type de déclaration est obligatoire';
+      if (dateDecl < dateSurv) {
+        errors.dateDecl = 'La date de déclaration ne peut pas être antérieure à la date de survenance';
       }
     }
     
-    if (!permissions.dateSurv.allowed) {
-      if (formData.dateSurv !== (sinistreOriginal?.dateSurv || '')) {
-        if (formData.etatSinistreLibelle?.toLowerCase().includes('facture')) {
-          errors.dateSurv = `Vous n'avez pas le droit de modifier la date de survenance car le sinistre est en attente de facture.`;
-        } else if (formData.etatSinistreLibelle?.toLowerCase().includes('cm')) {
-          errors.dateSurv = `Vous n'avez pas le droit de modifier la date de survenance car le sinistre est en attente de commission médicale.`;
-        } else {
-          errors.dateSurv = `Vous n'avez pas le droit de modifier la date de survenance car le sinistre est ${formData.etatSinistreLibelle.toLowerCase()}.`;
-        }
-      }
-    } else {
-      if (!formData.dateSurv || !formData.dateSurv.trim()) {
-        errors.dateSurv = 'La date de survenance est obligatoire';
-      }
-      
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-      if (formData.dateSurv && !dateRegex.test(formData.dateSurv)) {
-        errors.dateSurv = 'Format de date invalide (AAAA-MM-JJ)';
-      }
-      
-      if (formData.dateSurv) {
-        const dateSurv = new Date(formData.dateSurv);
-        const today = new Date();
-        today.setHours(23, 59, 59, 999);
-        
-        if (dateSurv > today) {
-          errors.dateSurv = 'La date de survenance ne peut pas être dans le futur';
-        }
-      }
-    }
-    
-    if (!permissions.dateDecl.allowed) {
-      if (formData.dateDecl !== (sinistreOriginal?.dateDecl || '')) {
-        errors.dateDecl = `Vous n'avez pas le droit de modifier la date de déclaration car le sinistre est ${formData.etatSinistreLibelle.toLowerCase()}.`;
-      }
-    } else {
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-      if (formData.dateDecl && formData.dateDecl.trim() && !dateRegex.test(formData.dateDecl)) {
-        errors.dateDecl = 'Format de date invalide (AAAA-MM-JJ)';
-      }
-      
-      if (formData.dateSurv && formData.dateDecl) {
-        const dateSurv = new Date(formData.dateSurv);
-        const dateDecl = new Date(formData.dateDecl);
-        
-        if (dateDecl < dateSurv) {
-          errors.dateDecl = 'La date de déclaration ne peut pas être antérieure à la date de survenance';
-        }
-      }
-    }
-    
-    if (!permissions.montoFe.allowed) {
-      if (formData.montoFe !== (sinistreOriginal?.montoFe || '')) {
-        if (formData.etatSinistreLibelle?.toLowerCase().includes('facture')) {
-          errors.montoFe = `Vous n'avez pas le droit de modifier les frais engagés car le sinistre est en attente de facture.`;
-        } else if (formData.etatSinistreLibelle?.toLowerCase().includes('cm')) {
-          errors.montoFe = `Vous n'avez pas le droit de modifier les frais engagés car le sinistre est en attente de commission médicale.`;
-        } else {
-          errors.montoFe = `Vous n'avez pas le droit de modifier les frais engagés car le sinistre est ${formData.etatSinistreLibelle.toLowerCase()}.`;
-        }
-      }
-    } else {
-      if (formData.montoFe && formData.montoFe.trim()) {
-        const montant = parseFloat(formData.montoFe);
-        if (isNaN(montant) || montant < 0) {
-          errors.montoFe = 'Le montant doit être un nombre positif';
-        }
-      }
-    }
-    
-    if (!permissions.refExtSi.allowed) {
-      if (formData.refExtSi !== (sinistreOriginal?.refExtSi || '')) {
-        errors.refExtSi = `Vous n'avez pas le droit de modifier la référence externe car le sinistre est ${formData.etatSinistreLibelle.toLowerCase()}.`;
-      }
-    }
-    
-    if (!permissions.natuMala.allowed) {
-      if (formData.natuMala !== (sinistreOriginal?.natuMala || '')) {
-        errors.natuMala = `Vous n'avez pas le droit de modifier la nature de la maladie car le sinistre est ${formData.etatSinistreLibelle.toLowerCase()}.`;
+    // Validation du montant
+    if (formData.montoFe && formData.montoFe.trim()) {
+      const montant = parseFloat(formData.montoFe);
+      if (isNaN(montant) || montant < 0) {
+        errors.montoFe = 'Le montant doit être un nombre positif';
       }
     }
     
@@ -381,31 +181,8 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!canModifySinistre(formData.etatSinistreLibelle)) {
-      const etat = formData.etatSinistreLibelle?.toUpperCase();
-      let message = '';
-      
-      if (['REGLE', 'RÉGLÉ'].some(e => etat?.includes(e))) {
-        message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-      } else if (['REJETE', 'REJETÉ'].some(e => etat?.includes(e))) {
-        message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-      } else if (['ANNULE', 'ANNULÉ'].some(e => etat?.includes(e))) {
-        message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-      } else if (etat?.includes('SANS_SUITE')) {
-        message = `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-      } else if (etat?.includes('MIGR')) {
-        message = `Vous n'avez pas le droit de modifier ce sinistre car il est migré. Consultation uniquement autorisée.`;
-      } else {
-        message = `Ce sinistre à l'état "${formData.etatSinistreLibelle}" ne peut pas être modifié.`;
-      }
-      
-      setError(message);
-      console.log('🚨 TENTATIVE DE MODIFICATION BLOQUÉE:', message);
-      return;
-    }
-    
     if (!validateForm()) {
-      setError(validation.global || 'Veuillez corriger les erreurs dans le formulaire');
+      setError('Veuillez corriger les erreurs dans le formulaire');
       return;
     }
     
@@ -431,21 +208,6 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
       
       console.log('✅ Réponse de modification:', response);
       
-      if (response.data && response.data.etatSinistreLibelle) {
-        const etatOriginal = formData.etatSinistreLibelle?.toUpperCase();
-        const nouvelEtat = response.data.etatSinistreLibelle?.toUpperCase();
-        
-        if (etatOriginal !== nouvelEtat) {
-          console.log('🚨 ALERTE : État changé de', etatOriginal, 'vers', nouvelEtat);
-          
-          const etatsInterdits = ['REGLE', 'REJETE', 'ANNULE', 'SANS_SUITE', 'MIGRE', 'RÉGLÉ', 'REJETÉ', 'ANNULÉ'];
-          if (etatsInterdits.some(e => etatOriginal?.includes(e)) && nouvelEtat?.includes('OUVERT')) {
-            setError(`ERREUR CRITIQUE : Le sinistre a changé d'état de "${formData.etatSinistreLibelle}" vers "${response.data.etatSinistreLibelle}". Cette opération est interdite.`);
-            return;
-          }
-        }
-      }
-      
       setSuccessMessage(response.message || 'Sinistre modifié avec succès !');
       
       if (response.data) {
@@ -466,6 +228,7 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
       const errorMessage = SinistreService.handleAPIError(error);
       setError(errorMessage);
       
+      // Si erreur liée aux états non modifiables, rediriger vers les détails
       if (errorMessage.includes('ne peut pas être modifié') || 
           errorMessage.includes('réouverture est possible') ||
           errorMessage.includes('consultation uniquement')) {
@@ -487,7 +250,7 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
   };
 
   const hasChanges = () => {
-    if (!sinistreOriginal || !canModifySinistre(formData.etatSinistreLibelle)) return false;
+    if (!sinistreOriginal) return false;
     
     return (
       formData.codeDecl !== (sinistreOriginal.codeDecl || '') ||
@@ -615,28 +378,6 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
         </div>
       </div>
 
-      {!canModifySinistre(formData.etatSinistreLibelle) && (
-        <div className="alert alert-error">
-          <AlertCircle className="alert-icon" />
-          {(() => {
-            const etat = formData.etatSinistreLibelle?.toUpperCase();
-            if (['REGLE', 'RÉGLÉ'].some(e => etat?.includes(e))) {
-              return `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-            } else if (['REJETE', 'REJETÉ'].some(e => etat?.includes(e))) {
-              return `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-            } else if (['ANNULE', 'ANNULÉ'].some(e => etat?.includes(e))) {
-              return `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-            } else if (etat?.includes('SANS_SUITE')) {
-              return `Vous n'avez pas le droit de modifier ce sinistre car il est à l'état '${formData.etatSinistreLibelle}'. Seule la réouverture du sinistre est possible.`;
-            } else if (etat?.includes('MIGR')) {
-              return `Vous n'avez pas le droit de modifier ce sinistre car il est migré. Consultation uniquement autorisée.`;
-            } else {
-              return `Ce sinistre ne peut pas être modifié car il est à l'état "${formData.etatSinistreLibelle}".`;
-            }
-          })()}
-        </div>
-      )}
-
       {error && (
         <div className="alert alert-error">
           <AlertCircle className="alert-icon" />
@@ -671,18 +412,12 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
               <div className="form-group">
                 <label className="form-label required">
                   Type Déclaration *
-                  {hasFieldWarning('codeDecl') && (
-                    <AlertTriangle className="warning-icon" title="Attention: modification limitée pour cet état" />
-                  )}
                 </label>
                 <select
                   value={formData.codeDecl}
                   onChange={(e) => handleInputChange('codeDecl', e.target.value)}
-                  className={`form-input ${validation.codeDecl ? 'error' : ''} ${
-                    isFieldDisabled('codeDecl') ? 'disabled' : ''
-                  } ${hasFieldWarning('codeDecl') ? 'warning' : ''}`}
-                  disabled={isFieldDisabled('codeDecl') || loadingTypes}
-                  title={isFieldDisabled('codeDecl') ? `Champ non modifiable pour l'état "${formData.etatSinistreLibelle}"` : ''}
+                  className={`form-input ${validation.codeDecl ? 'error' : ''}`}
+                  disabled={loadingTypes}
                 >
                   <option value="">-- Sélectionner --</option>
                   {typesDeclaration.map(type => (
@@ -694,9 +429,6 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
                 {validation.codeDecl && (
                   <span className="error-message">{validation.codeDecl}</span>
                 )}
-                {hasFieldWarning('codeDecl') && !validation.codeDecl && (
-                  <span className="warning-message">⚠️ WARNING: Modification du type de déclaration pour sinistre EN_COURS_CHIFFRAGE</span>
-                )}
               </div>
               
               <div className="form-group">
@@ -705,12 +437,8 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
                   type="date"
                   value={formData.dateSurv}
                   onChange={(e) => handleInputChange('dateSurv', e.target.value)}
-                  className={`form-input ${validation.dateSurv ? 'error' : ''} ${
-                    isFieldDisabled('dateSurv') ? 'disabled' : ''
-                  }`}
+                  className={`form-input ${validation.dateSurv ? 'error' : ''}`}
                   max={new Date().toISOString().split('T')[0]}
-                  disabled={isFieldDisabled('dateSurv')}
-                  title={isFieldDisabled('dateSurv') ? `Champ non modifiable pour l'état "${formData.etatSinistreLibelle}"` : ''}
                 />
                 {validation.dateSurv && (
                   <span className="error-message">{validation.dateSurv}</span>
@@ -725,12 +453,8 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
                   type="date"
                   value={formData.dateDecl}
                   onChange={(e) => handleInputChange('dateDecl', e.target.value)}
-                  className={`form-input ${validation.dateDecl ? 'error' : ''} ${
-                    isFieldDisabled('dateDecl') ? 'disabled' : ''
-                  }`}
+                  className={`form-input ${validation.dateDecl ? 'error' : ''}`}
                   max={new Date().toISOString().split('T')[0]}
-                  disabled={isFieldDisabled('dateDecl')}
-                  title={isFieldDisabled('dateDecl') ? `Champ non modifiable pour l'état "${formData.etatSinistreLibelle}"` : ''}
                 />
                 {validation.dateDecl && (
                   <span className="error-message">{validation.dateDecl}</span>
@@ -743,13 +467,9 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
                   type="text"
                   value={formData.refExtSi}
                   onChange={(e) => handleInputChange('refExtSi', e.target.value)}
-                  className={`form-input ${
-                    isFieldDisabled('refExtSi') ? 'disabled' : ''
-                  }`}
+                  className="form-input"
                   placeholder="Référence externe du sinistre"
                   maxLength="50"
-                  disabled={isFieldDisabled('refExtSi')}
-                  title={isFieldDisabled('refExtSi') ? `Champ non modifiable pour l'état "${formData.etatSinistreLibelle}"` : ''}
                 />
                 {validation.refExtSi && (
                   <span className="error-message">{validation.refExtSi}</span>
@@ -768,27 +488,17 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
               <div className="form-group full-width">
                 <label className="form-label">
                   Nature de la Maladie
-                  {hasFieldWarning('natuMala') && (
-                    <AlertTriangle className="warning-icon" title="Attention: modification limitée pour cet état" />
-                  )}
                 </label>
                 <textarea
                   value={formData.natuMala}
                   onChange={(e) => handleInputChange('natuMala', e.target.value)}
-                  className={`form-textarea ${
-                    isFieldDisabled('natuMala') ? 'disabled' : ''
-                  } ${hasFieldWarning('natuMala') ? 'warning' : ''}`}
+                  className="form-textarea"
                   placeholder="Décrivez la nature de la maladie ou du traitement..."
                   rows="3"
                   maxLength="500"
-                  disabled={isFieldDisabled('natuMala')}
-                  title={isFieldDisabled('natuMala') ? `Champ non modifiable pour l'état "${formData.etatSinistreLibelle}"` : ''}
                 />
                 {validation.natuMala && (
                   <span className="error-message">{validation.natuMala}</span>
-                )}
-                {hasFieldWarning('natuMala') && !validation.natuMala && (
-                  <span className="warning-message">⚠️ WARNING: Modification de la nature de maladie pour sinistre EN_ATTENTE_CM</span>
                 )}
                 <div className="char-counter">
                   {formData.natuMala ? formData.natuMala.length : 0}/500
@@ -812,12 +522,8 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
                   min="0"
                   value={formData.montoFe}
                   onChange={(e) => handleInputChange('montoFe', e.target.value)}
-                  className={`form-input ${validation.montoFe ? 'error' : ''} ${
-                    isFieldDisabled('montoFe') ? 'disabled' : ''
-                  }`}
+                  className={`form-input ${validation.montoFe ? 'error' : ''}`}
                   placeholder="0.00"
-                  disabled={isFieldDisabled('montoFe')}
-                  title={isFieldDisabled('montoFe') ? `Champ non modifiable pour l'état "${formData.etatSinistreLibelle}"` : ''}
                 />
                 {validation.montoFe && (
                   <span className="error-message">{validation.montoFe}</span>
@@ -888,15 +594,9 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
           
           <button
             type="submit"
-            disabled={saving || !hasChanges() || !canModifySinistre(formData.etatSinistreLibelle)}
+            disabled={saving || !hasChanges()}
             className="btn btn-primary"
-            title={
-              !canModifySinistre(formData.etatSinistreLibelle) 
-                ? `Sinistre non modifiable à l'état "${formData.etatSinistreLibelle}"` 
-                : !hasChanges() 
-                ? 'Aucune modification à sauvegarder' 
-                : ''
-            }
+            title={!hasChanges() ? 'Aucune modification à sauvegarder' : ''}
           >
             {saving ? (
               <RefreshCw className="btn-icon animate-spin" />

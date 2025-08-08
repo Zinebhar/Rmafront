@@ -489,27 +489,25 @@
   grid-column: span 2; 
 }
 
-
-/* ✅ SECTION BOUTONS D'ACTION - CORRECTION FINALE DU DÉCALAGE */
+/* ✅ SECTION BOUTONS D'ACTION FORMULAIRE */
 .form-actions {
   display: flex !important;
   flex-direction: row !important;
   justify-content: flex-start !important;
   align-items: center !important;
-  gap: 12px !important; /* ✅ Gap optimisé */
+  gap: 12px !important;
   flex-wrap: wrap !important;
   width: 100% !important;
   margin: 0 !important;
-  padding: 16px 24px 12px 24px !important; /* ✅ CORRECTION : Padding plus généreux */
+  padding: 16px 24px 12px 24px !important;
   box-sizing: border-box !important;
   position: relative !important;
   left: auto !important;
   right: auto !important;
   top: auto !important;
   transform: none !important;
-  border-top: 1px solid #f3f4f6; /* Bordure de séparation */
-  /* ✅ Contraintes strictes pour éviter le débordement */
-  max-width: 100% !important; /* ✅ Largeur complète pour alignement */
+  border-top: 1px solid #f3f4f6;
+  max-width: 100% !important;
   overflow: hidden !important;
 }
 
@@ -522,24 +520,155 @@
   flex-wrap: wrap !important;
   width: 100% !important;
   margin: 0 !important;
-  padding: 16px 24px 12px 24px !important; /* ✅ CORRECTION : Même padding généreux */
+  padding: 16px 24px 12px 24px !important;
   box-sizing: border-box !important;
   position: relative !important;
   left: auto !important;
   right: auto !important;
   top: auto !important;
   transform: none !important;
-  max-width: 100% !important; /* ✅ Largeur complète pour alignement */
+  max-width: 100% !important;
   overflow: hidden !important;
   border-top: 1px solid #f3f4f6;
 }
 
-/* ✅ BOUTONS OPTIMISÉS */
+/* ✅ NOUVELLE SECTION : BOUTONS D'ACTION DANS LE TABLEAU */
+.action-buttons {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  min-width: 240px !important;
+  padding: 8px 4px !important;
+}
+
+.action-buttons .btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 8px 14px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  min-height: 34px !important;
+  box-sizing: border-box !important;
+  border: 1px solid !important;
+  text-decoration: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.action-buttons .btn-small {
+  padding: 7px 12px !important;
+  font-size: 11px !important;
+  min-height: 30px !important;
+}
+
+/* Bouton Détails - Style bleu outline */
+.action-buttons .btn-outline {
+  background: #ffffff !important;
+  border-color: #3b82f6 !important;
+  color: #3b82f6 !important;
+}
+
+.action-buttons .btn-outline:hover {
+  background: #eff6ff !important;
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 6px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Styles pour les boutons de documents colorés */
+.action-buttons .bg-red-600 {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+.action-buttons .bg-red-600:hover {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 6px rgba(220, 38, 38, 0.3) !important;
+}
+
+.action-buttons .bg-green-600 {
+  background: #16a34a !important;
+  border-color: #16a34a !important;
+  color: #ffffff !important;
+}
+
+.action-buttons .bg-green-600:hover {
+  background: #15803d !important;
+  border-color: #15803d !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 6px rgba(22, 163, 74, 0.3) !important;
+}
+
+.action-buttons .bg-orange-500 {
+  background: #f97316 !important;
+  border-color: #f97316 !important;
+  color: #ffffff !important;
+}
+
+.action-buttons .bg-orange-500:hover {
+  background: #ea580c !important;
+  border-color: #ea580c !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 6px rgba(249, 115, 22, 0.3) !important;
+}
+
+.action-buttons .bg-purple-600 {
+  background: #9333ea !important;
+  border-color: #9333ea !important;
+  color: #ffffff !important;
+}
+
+.action-buttons .bg-purple-600:hover {
+  background: #7c3aed !important;
+  border-color: #7c3aed !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 6px rgba(147, 51, 234, 0.3) !important;
+}
+
+.action-buttons .bg-blue-600 {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.action-buttons .bg-blue-600:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 6px rgba(37, 99, 235, 0.3) !important;
+}
+
+.action-buttons .text-white {
+  color: #ffffff !important;
+}
+
+.action-buttons .ml-2 {
+  margin-left: 4px !important;
+}
+
+.action-buttons .btn-icon {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+}
+
+/* ✅ BOUTONS GÉNÉRAUX OPTIMISÉS */
 .btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px; /* ✅ Taille optimisée */
+  padding: 12px 24px;
   border-radius: var(--border-radius);
   font-size: 14px;
   font-weight: 500;
@@ -547,7 +676,7 @@
   transition: all 0.2s ease;
   border: 1px solid;
   text-decoration: none;
-  min-height: 42px; /* ✅ Hauteur optimisée */
+  min-height: 42px;
   box-sizing: border-box;
   max-width: fit-content !important;
   flex-shrink: 0 !important;
@@ -589,7 +718,6 @@
   background: var(--primary-blue-light);
 }
 
-/* ✅ NOUVEAU : BOUTON ORANGE POUR DÉTAILS - CORRECTION COULEUR */
 .btn-orange {
   background: #f59e0b !important;
   border-color: #f59e0b !important;
@@ -669,9 +797,9 @@
 }
 
 .results-header {
-  padding: 20px 24px; /* ✅ Padding plus généreux */
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); /* ✅ Gradient subtil */
-  border-bottom: 2px solid #e2e8f0; /* ✅ Bordure plus marquée */
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 2px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -680,9 +808,9 @@
 }
 
 .results-title {
-  font-size: 18px; /* ✅ Titre plus grand */
-  font-weight: 700; /* ✅ Plus bold */
-  color: #1e293b; /* ✅ Couleur plus foncée */
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
   margin: 0;
   display: flex;
   align-items: center;
@@ -690,13 +818,13 @@
 }
 
 .results-title::before {
-  content: "📋"; /* ✅ Icône émoji pour plus de style */
+  content: "📋";
   font-size: 16px;
 }
 
 .results-info {
-  font-size: 13px; /* ✅ Légèrement plus grand */
-  color: #64748b; /* ✅ Couleur plus moderne */
+  font-size: 13px;
+  color: #64748b;
   font-weight: 500;
 }
 
@@ -717,42 +845,42 @@
 }
 
 .results-table th {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); /* ✅ Gradient pour les headers */
-  padding: 16px 20px; /* ✅ Padding plus généreux */
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  padding: 16px 20px;
   text-align: left;
-  font-size: 13px; /* ✅ Légèrement plus grand */
-  font-weight: 600; /* ✅ Plus bold */
-  color: #475569; /* ✅ Couleur plus moderne */
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 2px solid #cbd5e1; /* ✅ Bordure plus marquée */
+  border-bottom: 2px solid #cbd5e1;
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
 .results-table td {
-  padding: 18px 20px; /* ✅ Padding plus généreux */
-  border-bottom: 1px solid #f1f5f9; /* ✅ Bordure plus subtile */
+  padding: 18px 20px;
+  border-bottom: 1px solid #f1f5f9;
   font-size: 14px;
   transition: all 0.2s ease;
 }
 
 .results-table tr:hover {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); /* ✅ Gradient au hover */
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .cell-primary {
-  font-weight: 600; /* ✅ Plus bold */
-  color: #1e293b; /* ✅ Couleur plus foncée */
+  font-weight: 600;
+  color: #1e293b;
   margin-bottom: 4px;
 }
 
 .cell-secondary {
-  font-size: 13px; /* ✅ Légèrement plus grand */
-  color: #64748b; /* ✅ Couleur plus moderne */
+  font-size: 13px;
+  color: #64748b;
 }
 
 .cell-truncate {
@@ -766,13 +894,13 @@
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 6px 14px; /* ✅ Padding plus généreux */
-  border-radius: 20px; /* ✅ Plus arrondi */
+  padding: 6px 14px;
+  border-radius: 20px;
   font-size: 12px;
-  font-weight: 600; /* ✅ Plus bold */
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* ✅ Ombre subtile */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
@@ -782,25 +910,25 @@
 }
 
 .status-open {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%); /* ✅ Gradient vert */
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #ffffff;
   border: 1px solid #10b981;
 }
 
 .status-closed {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); /* ✅ Gradient rouge */
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: #ffffff;
   border: 1px solid #ef4444;
 }
 
 .status-progress {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); /* ✅ Gradient bleu */
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: #ffffff;
   border: 1px solid #3b82f6;
 }
 
 .status-default {
-  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); /* ✅ Gradient gris */
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
   color: #ffffff;
   border: 1px solid #6b7280;
 }
@@ -1059,7 +1187,7 @@
   }
   
   .form-container {
-    padding: 22px; /* ✅ Légèrement réduit pour tablettes */
+    padding: 22px;
   }
   
   .form-content {
@@ -1068,7 +1196,7 @@
   
   .form-actions {
     gap: 10px !important;
-    padding: 12px 18px 8px 18px !important; /* ✅ Padding plus généreux pour tablettes */
+    padding: 12px 18px 8px 18px !important;
     max-width: 100% !important;
   }
   
@@ -1082,6 +1210,17 @@
   .form-grid-3 {
     grid-template-columns: 1fr 1fr !important;
     gap: 16px !important;
+  }
+
+  .action-buttons {
+    min-width: 200px !important;
+    gap: 6px !important;
+  }
+
+  .action-buttons .btn {
+    padding: 7px 12px !important;
+    font-size: 11px !important;
+    min-height: 30px !important;
   }
 }
 
@@ -1102,7 +1241,7 @@
   .form-actions,
   .consultation-container .form-container .form-actions {
     gap: 10px !important;
-    padding: 10px 16px 6px 16px !important; /* ✅ Padding confortable pour petites tablettes */
+    padding: 10px 16px 6px 16px !important;
     max-width: 100% !important;
   }
   
@@ -1114,6 +1253,18 @@
   
   .span-2 {
     grid-column: span 2; 
+  }
+
+  .action-buttons {
+    min-width: 180px !important;
+    gap: 4px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .action-buttons .btn {
+    width: 100% !important;
+    justify-content: center !important;
   }
 }
 
@@ -1147,7 +1298,7 @@
   }
   
   .form-container {
-    padding: 20px; /* ✅ Padding mobile confortable */
+    padding: 20px;
   }
   
   .form-content {
@@ -1164,8 +1315,8 @@
     width: 100% !important;
     text-align: left !important;
     box-sizing: border-box !important;
-    max-width: 100% !important; /* ✅ MOBILE : Largeur complète */
-    padding: 12px 16px 8px 16px !important; /* ✅ MOBILE : Padding confortable */
+    max-width: 100% !important;
+    padding: 12px 16px 8px 16px !important;
     overflow: hidden !important;
   }
   
@@ -1185,7 +1336,7 @@
   }
   
   .btn {
-    padding: 10px 20px; /* ✅ Mobile adapté */
+    padding: 10px 20px;
     min-height: 40px;
     font-size: 13px;
   }
@@ -1196,7 +1347,7 @@
     width: auto !important;
     margin: 0 !important;
     display: inline-flex !important;
-    max-width: calc(48% - 5px) !important; /* ✅ 2 boutons par ligne */
+    max-width: calc(48% - 5px) !important;
   }
   
   .consultation-container .form-container .form-actions .btn {
@@ -1238,6 +1389,21 @@
   .help-grid {
     grid-template-columns: 1fr;
   }
+
+  .action-buttons {
+    min-width: auto !important;
+    gap: 4px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 4px 2px !important;
+  }
+
+  .action-buttons .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 8px 12px !important;
+    min-height: 36px !important;
+  }
 }
 
 /* Très petits mobiles */
@@ -1247,7 +1413,7 @@
   }
   
   .form-container {
-    padding: 16px; /* ✅ Padding minimal mais suffisant */
+    padding: 16px;
   }
   
   .form-content {
@@ -1265,13 +1431,13 @@
     width: 100% !important;
     text-align: left !important;
     box-sizing: border-box !important;
-    max-width: 100% !important; /* ✅ TRÈS PETITS ÉCRANS : Largeur complète */
-    padding: 10px 12px 6px 12px !important; /* ✅ TRÈS PETITS ÉCRANS : Padding minimal mais confortable */
+    max-width: 100% !important;
+    padding: 10px 12px 6px 12px !important;
     overflow: hidden !important;
   }
   
   .btn {
-    padding: 8px 16px !important; /* ✅ Très petits écrans */
+    padding: 8px 16px !important;
     font-size: 12px !important;
     min-height: 36px;
   }
@@ -1285,7 +1451,7 @@
     width: auto !important;
     margin: 0 !important;
     display: inline-flex !important;
-    max-width: calc(45% - 4px) !important; /* ✅ TRÈS PETITS ÉCRANS : Largeur ajustée */
+    max-width: calc(45% - 4px) !important;
   }
   
   .form-grid-2,
@@ -1309,4 +1475,49 @@
     width: 14px;
     height: 14px;
   }
+
+  .action-buttons {
+    min-width: auto !important;
+    gap: 2px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 2px 1px !important;
+  }
+
+  .action-buttons .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 6px 10px !important;
+    min-height: 32px !important;
+    font-size: 10px !important;
+  }
+
+  .action-buttons .btn-icon {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  .status-badge.status-medical { 
+  background-color: #8b5cf6; 
+  color: white; 
+}
+
+.status-badge.status-cancelled { 
+  background-color: #6b7280; 
+  color: white; 
+}
+
+.status-badge.status-migrated { 
+  background-color: #374151; 
+  color: white; 
+}
+
+.status-badge.status-pending { 
+  background-color: #f97316; 
+  color: white; 
+}
+
+.status-badge.status-partial { 
+  background-color: #f59e0b; 
+  color: white; 
+}
 }

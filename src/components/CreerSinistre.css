@@ -475,6 +475,267 @@ select.input-control {
   100% { transform: rotate(360deg); }
 }
 
+/* ✅ SECTION IMPORTATION DE FICHIER PDF - NOUVELLE SECTION COMPLÈTE */
+.file-upload-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: all 0.2s ease;
+}
+
+.file-upload-section:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.file-upload-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.file-upload-header .input-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.file-upload-icon {
+  width: 20px;
+  height: 20px;
+  color: #6b7280;
+  background: none !important;
+}
+
+.file-upload-badge {
+  background-color: #6b7280;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.file-upload-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 32px 24px;
+  background-color: #f9fafb;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-height: 120px;
+}
+
+.file-upload-container:hover {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.file-upload-container.drag-over {
+  border-color: #2563eb;
+  background-color: #dbeafe;
+  transform: scale(1.02);
+}
+
+.file-upload-container.has-file {
+  border-color: #10b981;
+  background-color: #ecfdf5;
+  border-style: solid;
+}
+
+.file-upload-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.file-upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.file-upload-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 2px solid #3b82f6;
+  transition: all 0.3s ease;
+}
+
+.file-upload-container:hover .file-upload-visual {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.file-upload-container.has-file .file-upload-visual {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #10b981;
+}
+
+.file-upload-visual-icon {
+  width: 28px;
+  height: 28px;
+  color: #3b82f6;
+  background: none !important;
+}
+
+.file-upload-container.has-file .file-upload-visual-icon {
+  color: #10b981;
+}
+
+.file-upload-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.file-upload-main-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.file-upload-sub-text {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.file-upload-specs {
+  font-size: 12px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* État avec fichier sélectionné */
+.file-selected-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.file-selected-icon {
+  width: 24px;
+  height: 24px;
+  color: #16a34a;
+  background: none !important;
+}
+
+.file-selected-details {
+  flex: 1;
+}
+
+.file-selected-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #166534;
+  margin-bottom: 2px;
+}
+
+.file-selected-size {
+  font-size: 12px;
+  color: #15803d;
+}
+
+.file-remove-btn {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.file-remove-btn:hover {
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.file-remove-icon {
+  width: 16px;
+  height: 16px;
+  background: none !important;
+}
+
+/* Animation de chargement pour l'upload */
+.file-uploading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.file-uploading-spinner {
+  width: 16px;
+  height: 16px;
+  color: #3b82f6;
+  animation: spin 1s linear infinite;
+  background: none !important;
+}
+
+.file-uploading-text {
+  font-size: 14px;
+  color: #1d4ed8;
+  font-weight: 500;
+}
+
+/* Erreur de fichier */
+.file-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.file-error-icon {
+  width: 16px;
+  height: 16px;
+  color: #dc2626;
+  background: none !important;
+}
+
+.file-error-text {
+  font-size: 14px;
+  color: #dc2626;
+  font-weight: 500;
+}
+
 .validateur-assure-container {
   grid-column: 1 / -1;
   margin-top: 16px;
@@ -673,11 +934,53 @@ svg {
   .btn-large {
     width: 100%;
   }
+
+  /* Responsive pour la section fichier */
+  .file-upload-section {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .file-upload-container {
+    padding: 24px 16px;
+  }
+  
+  .file-upload-visual {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .file-upload-visual-icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .file-upload-main-text {
+    font-size: 14px;
+  }
+  
+  .file-upload-sub-text {
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 480px) {
   .create-container {
     padding-top: 80px; /* Navbar très petit écran + espacement */
+  }
+
+  .file-upload-container {
+    padding: 20px 12px;
+  }
+  
+  .file-selected-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .file-remove-btn {
+    align-self: flex-end;
   }
 }
 

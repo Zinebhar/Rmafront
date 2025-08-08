@@ -83,7 +83,28 @@ const DetailsSinistre = ({ sidebarCollapsed = false }) => {
     type: "ACCORD" 
   }
 };
-
+const ETATS_NON_MODIFIABLES = ['4', '3', '14', '5', '20'];
+const peutEtreModifie = (etatSinistre, etatSinistreLibelle) => {
+  // Vérification par code d'état (plus fiable)
+  if (etatSinistre && ETATS_NON_MODIFIABLES.includes(etatSinistre.toString())) {
+    return false;
+  }
+  
+  // Vérification par libellé (fallback)
+  if (etatSinistreLibelle) {
+    const libelle = etatSinistreLibelle.toUpperCase();
+    return !(
+      libelle.includes('RÉGLÉ') || libelle.includes('REGLE') ||
+      libelle.includes('REJETÉ') || libelle.includes('REJETE') ||
+      libelle.includes('ANNULÉ') || libelle.includes('ANNULE') ||
+      libelle.includes('SANS SUITE') ||
+      libelle.includes('MIGRÉ') || libelle.includes('MIGRE')
+    );
+  }
+  
+  // Par défaut, autoriser la modification si on ne peut pas déterminer l'état
+  return true;
+};
   useEffect(() => {
     const loadSinistreDetails = async () => {
       try {
@@ -375,18 +396,28 @@ const DetailsSinistre = ({ sidebarCollapsed = false }) => {
         </div>
 
         <div className="header-actions">
-          {getDocumentButton()}
-          
-          <button onClick={handleModifier} className="btn btn-primary">
-            <Edit className="btn-icon" />
-            Modifier
-          </button>
-          
-          <button onClick={handleBack} className="btn btn-secondary">
-            <ArrowLeft className="btn-icon" />
-            Retour à la consultation
-          </button>
-        </div>
+  {getDocumentButton()}
+  
+  {/* Bouton Modifier - conditionnel selon l'état */}
+  {peutEtreModifie(sinistreDetails.etatSinistre, sinistreDetails.etatSinistreLibelle) ? (
+    <button onClick={handleModifier} className="btn btn-primary">
+      <Edit className="btn-icon" />
+      Modifier
+    </button>
+  ) : (
+    <div className="modification-disabled-info">
+      <button disabled className="btn btn-disabled" title={`Modification impossible `}>
+        <Edit className="btn-icon opacity-50" />
+        Modification impossible
+      </button>
+    </div>
+  )}
+  
+  <button onClick={handleBack} className="btn btn-secondary">
+    <ArrowLeft className="btn-icon" />
+    Retour à la consultation
+  </button>
+</div>
       </div>
 
       {error && (

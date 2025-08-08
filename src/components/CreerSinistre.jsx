@@ -16,7 +16,9 @@ import {
   Hash,
   Info,
   Save,
-  RefreshCw
+  RefreshCw,
+  Upload,
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import SinistreService from '../services/sinistreService';
@@ -28,6 +30,140 @@ const formatDateToDDMMYYYY = (isoDate) => {
   if (!isoDate) return '';
   const [year, month, day] = isoDate.split('-');
   return `${day}/${month}/${year}`;
+};
+
+// Composant moderne pour l'upload de fichier
+const ModernFileUploadSection = ({ fichier, setFichier }) => {
+  const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleFileChange = (file) => {
+    setError('');
+    
+    if (file) {
+      // Validation du type de fichier
+      if (file.type !== 'application/pdf') {
+        setError('Seuls les fichiers PDF sont autorisés');
+        return;
+      }
+      
+      // Validation de la taille (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('La taille du fichier ne doit pas dépasser 5 MB');
+        return;
+      }
+      
+      setFichier(file);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      handleFileChange(droppedFile);
+    }
+  };
+
+  const removeFile = () => {
+    setFichier(null);
+    setError('');
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  return (
+    <div className="file-upload-section">
+      <div className="file-upload-header">
+        <FileText className="file-upload-icon" />
+        <label className="input-label">
+          Importer un fichier PDF (facultatif)
+        </label>
+        <span className="file-upload-badge">Facultatif</span>
+      </div>
+
+      <div 
+        className={`file-upload-container ${dragOver ? 'drag-over' : ''} ${fichier ? 'has-file' : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => handleFileChange(e.target.files[0])}
+          className="file-upload-input"
+        />
+        
+        <div className="file-upload-content">
+          <div className="file-upload-visual">
+            {fichier ? (
+              <CheckCircle className="file-upload-visual-icon" />
+            ) : (
+              <Upload className="file-upload-visual-icon" />
+            )}
+          </div>
+          
+          <div className="file-upload-text">
+            {fichier ? (
+              <>
+                <div className="file-upload-main-text">Fichier sélectionné</div>
+                <div className="file-upload-sub-text">Cliquez pour changer de fichier</div>
+              </>
+            ) : (
+              <>
+                <div className="file-upload-main-text">Glissez-déposez votre fichier PDF ici</div>
+                <div className="file-upload-sub-text">ou cliquez pour parcourir</div>
+                <div className="file-upload-specs">Format accepté : PDF • Taille max : 5 MB</div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {fichier && (
+        <div className="file-selected-info">
+          <FileText className="file-selected-icon" />
+          <div className="file-selected-details">
+            <div className="file-selected-name">{fichier.name}</div>
+            <div className="file-selected-size">{formatFileSize(fichier.size)}</div>
+          </div>
+          <button 
+            type="button"
+            onClick={removeFile}
+            className="file-remove-btn"
+            title="Supprimer le fichier"
+          >
+            <X className="file-remove-icon" />
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <div className="file-error">
+          <AlertCircle className="file-error-icon" />
+          <span className="file-error-text">{error}</span>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const CreerSinistre = ({ sidebarCollapsed = false }) => {
@@ -165,76 +301,72 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!validateForm()) {
-    setError('Veuillez corriger les erreurs dans le formulaire');
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    const dataToSend = {
-      ...formData,
-      dateSurv: formatDateToDDMMYYYY(formData.dateSurv),
-    };
-
-    if (formData.dateDecl.trim()) {
-      dataToSend.dateDecl = formatDateToDDMMYYYY(formData.dateDecl);
-    }
-    if (formData.dateOuve.trim()) {
-      dataToSend.dateOuve = formatDateToDDMMYYYY(formData.dateOuve);
+    if (!validateForm()) {
+      setError('Veuillez corriger les erreurs dans le formulaire');
+      return;
     }
 
-    const formToSend = new FormData();
-    formToSend.append(
-      'sinistre',
-      new Blob([JSON.stringify(dataToSend)], { type: 'application/json' })
-    );
-    if (fichier) formToSend.append('fichier', fichier);
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
 
-    const response = await fetch(
-      'http://localhost:9999/rest/api/v1/consultation/sinistres/creer-sans-lot',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
-        body: formToSend,
+      const dataToSend = {
+        ...formData,
+        dateSurv: formatDateToDDMMYYYY(formData.dateSurv),
+      };
+
+      if (formData.dateDecl.trim()) {
+        dataToSend.dateDecl = formatDateToDDMMYYYY(formData.dateDecl);
       }
-    );
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Erreur HTTP ${response.status} : ${text}`);
-    }
-
-    const result = await response.json();
-    setSuccess(
-      `Sinistre créé avec succès ! Numéro: ${result.data[0]?.numSinistre || 'N/A'}`
-    );
-
-    setTimeout(() => {
-      if (result.data[0]?.numSinistre) {
-        navigate(`/consultation/sinistres/${result.data[0].numSinistre}/details`);
-      } else {
-        navigate('/consultation/sinistres');
+      if (formData.dateOuve.trim()) {
+        dataToSend.dateOuve = formatDateToDDMMYYYY(formData.dateOuve);
       }
-    }, 2000);
-  } catch (error) {
-    console.error('❌ Erreur lors de la création:', error);
-    setError(SinistreService.handleAPIError(error));
-  } finally {
-    setLoading(false);
-  }
-};
 
+      const formToSend = new FormData();
+      formToSend.append(
+        'sinistre',
+        new Blob([JSON.stringify(dataToSend)], { type: 'application/json' })
+      );
+      if (fichier) formToSend.append('fichier', fichier);
 
-      
+      const response = await fetch(
+        'http://localhost:8089/rest/api/v1/consultation/sinistres/creer-sans-lot',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+          },
+          body: formToSend,
+        }
+      );
 
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Erreur HTTP ${response.status} : ${text}`);
+      }
+
+      const result = await response.json();
+      setSuccess(
+        `Sinistre créé avec succès ! Numéro: ${result.data[0]?.numSinistre || 'N/A'}`
+      );
+
+      setTimeout(() => {
+        if (result.data[0]?.numSinistre) {
+          navigate(`/consultation/sinistres/${result.data[0].numSinistre}/details`);
+        } else {
+          navigate('/consultation/sinistres');
+        }
+      }, 2000);
+    } catch (error) {
+      console.error('❌ Erreur lors de la création:', error);
+      setError(SinistreService.handleAPIError(error));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -678,15 +810,12 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
             />
           </ExpandableCard>
         </div>
-          <div className="input-field">
-            <label className="input-label">Importer un fichier PDF (facultatif)</label>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => setFichier(e.target.files[0])}
-              className="input-control"
-            />
-          </div>
+
+        {/* ✅ SECTION MODERNE D'IMPORTATION PDF */}
+        <ModernFileUploadSection 
+          fichier={fichier} 
+          setFichier={setFichier}
+        />
 
         <div className="form-actions">
           <button 

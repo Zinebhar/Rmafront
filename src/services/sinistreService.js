@@ -1,7 +1,7 @@
 // 📁 src/services/sinistreService.js
 import { getAuthToken, setAuthToken, isTokenValid, clearAuthToken } from '../config/auth';
 
-const API_BASE_URL = 'http://localhost:9999/rest/api/v1/consultation/sinistres';
+const API_BASE_URL = 'http://localhost:8089/rest/api/v1/consultation/sinistres';
 
 class SinistreService {
   
@@ -34,15 +34,30 @@ async getEtatsSinistre() {
   } catch (error) {
     console.error('❌ Erreur récupération états de sinistre:', error);
     
-    // Fallback en cas d'erreur - mêmes données que le backend
-    console.log('🔄 Utilisation des états de fallback');
+    // Fallback avec TOUS les états (au lieu de seulement 5)
+    console.log('🔄 Utilisation des états de fallback complets');
     return {
       data: [
+        { code: '1', libelle: 'Ouvert' },
+        { code: '2', libelle: 'En cours de chiffrage' },
         { code: '3', libelle: 'Rejeté' },
         { code: '4', libelle: 'Réglé' },
-        { code: '6', libelle: 'En attente de complement d\'information' },
+        { code: '5', libelle: 'Sans suite' },
+        { code: '6', libelle: 'En attente de complément d\'information' },
+        { code: '7', libelle: 'En attente de contrôle médical' },
         { code: '8', libelle: 'En attente de contre visite' },
-        { code: '11', libelle: 'En attente facture définitive' }
+        { code: '9', libelle: 'En attente d\'établissement de décompte' },
+        { code: '10', libelle: 'Établissement de décompte en cours' },
+        { code: '11', libelle: 'En attente facture définitive' },
+        { code: '12', libelle: 'En attente de complément d\'information interne' },
+        { code: '13', libelle: 'En attente de contrôle médical systématique' },
+        { code: '14', libelle: 'Annulé' },
+        { code: '15', libelle: 'Accord réglé partiellement' },
+        { code: '16', libelle: 'Règlement annulé' },
+        { code: '17', libelle: 'En attente MAJ RIB Adhérent' },
+        { code: '18', libelle: 'En attente MAJ RIB Société' },
+        { code: '19', libelle: 'En attente MAJ Carte' },
+        { code: '20', libelle: 'Migré (à réouvrir)' }
       ],
       message: 'États de sinistre (mode hors ligne)',
       success: true
@@ -352,7 +367,7 @@ async getEtatsSinistre() {
     }
     
     // Vérification des caractères dangereux
-    const dangerousChars = /[<>'";&\\]/;
+    const dangerousChars = /[<>";&\\]/;
     if (dangerousChars.test(trimmedInput)) {
       throw new Error(`${fieldName} contient des caractères non autorisés`);
     }
