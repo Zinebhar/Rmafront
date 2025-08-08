@@ -212,18 +212,23 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
       throw new Error(`Erreur HTTP ${response.status} : ${text}`);
     }
 
-    const result = await response.json();
-    setSuccess(
-      `Sinistre créé avec succès ! Numéro: ${result.data[0]?.numSinistre || 'N/A'}`
-    );
+   const result = await response.json();
+  const sinistre = result.data;
 
-    setTimeout(() => {
-      if (result.data[0]?.numSinistre) {
-        navigate(`/consultation/sinistres/${result.data[0].numSinistre}/details`);
-      } else {
-        navigate('/consultation/sinistres');
-      }
-    }, 2000);
+  setSuccess(
+    `Sinistre créé avec succès ! Numéro: ${sinistre?.numSinistre || 'N/A'}`
+  );
+
+  setTimeout(() => {
+    if (sinistre?.numSinistre) {
+      navigate(`/consultation/sinistres/${sinistre.numSinistre}/details`);
+    } else {
+      navigate('/consultation/sinistres');
+    }
+  }, 2000);
+
+
+    
   } catch (error) {
     console.error('❌ Erreur lors de la création:', error);
     setError(SinistreService.handleAPIError(error));
