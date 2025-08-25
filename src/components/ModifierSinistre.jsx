@@ -49,7 +49,6 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
 
   const [validation, setValidation] = useState({});
 
-  // Chargement des types de déclaration
   useEffect(() => {
     const loadTypesDeclaration = async () => {
       try {
@@ -127,12 +126,10 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
   const validateForm = () => {
     const errors = {};
     
-    // Validation du code de déclaration
     if (!formData.codeDecl || !formData.codeDecl.trim()) {
       errors.codeDecl = 'Le type de déclaration est obligatoire';
     }
     
-    // Validation de la date de survenance
     if (!formData.dateSurv || !formData.dateSurv.trim()) {
       errors.dateSurv = 'La date de survenance est obligatoire';
     }
@@ -152,7 +149,6 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
       }
     }
     
-    // Validation de la date de déclaration
     if (formData.dateDecl && formData.dateDecl.trim() && !dateRegex.test(formData.dateDecl)) {
       errors.dateDecl = 'Format de date invalide (AAAA-MM-JJ)';
     }
@@ -166,7 +162,6 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
       }
     }
     
-    // Validation du montant
     if (formData.montoFe && formData.montoFe.trim()) {
       const montant = parseFloat(formData.montoFe);
       if (isNaN(montant) || montant < 0) {
@@ -228,7 +223,6 @@ const ModifierSinistre = ({ sidebarCollapsed = false }) => {
       const errorMessage = SinistreService.handleAPIError(error);
       setError(errorMessage);
       
-      // Si erreur liée aux états non modifiables, rediriger vers les détails
       if (errorMessage.includes('ne peut pas être modifié') || 
           errorMessage.includes('réouverture est possible') ||
           errorMessage.includes('consultation uniquement')) {

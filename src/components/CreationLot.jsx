@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   ArrowLeft, 
   Package, 
@@ -18,7 +18,83 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import lotService from '../services/lotService';
-import './CreerSinistre.css'; // ✅ Utilise le CSS de CreerSinistre
+import './CreerSinistre.css'; 
+
+
+const InputField = React.memo(({ label, value, onChange, error, required = false, type = 'text', placeholder = '', maxLength = null, disabled = false }) => (
+  <div className="input-field">
+    <label className={`input-label ${required ? 'required' : ''}`}>
+      {label}
+      {required && <span className="required-star">*</span>}
+    </label>
+    <input
+      type={type}
+      value={value || ''}
+      onChange={onChange}
+      className={`input-control ${error ? 'error' : ''} ${disabled ? 'disabled' : ''}`}
+      placeholder={placeholder}
+      maxLength={maxLength}
+      disabled={disabled}
+    />
+    {error && <span className="error-message">{error}</span>}
+  </div>
+));
+
+const SelectField = React.memo(({ label, value, onChange, options, error, required = false }) => (
+  <div className="input-field">
+    <label className={`input-label ${required ? 'required' : ''}`}>
+      {label}
+      {required && <span className="required-star">*</span>}
+    </label>
+    <select
+      value={value || ''}
+      onChange={onChange}
+      className={`input-control ${error ? 'error' : ''}`}
+    >
+      <option value="">-- Sélectionner --</option>
+      {options.map(option => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+    {error && <span className="error-message">{error}</span>}
+  </div>
+));
+
+const ExpandableCard = React.memo(({ title, icon, children, sectionKey, expandedSections, onToggle, badgeText = null }) => {
+  const IconElement = icon;
+  
+  return (
+    <div className="form-card">
+      <div 
+        className="card-header clickable" 
+        onClick={() => onToggle(sectionKey)}
+      >
+        <div className="card-title">
+          <IconElement className="card-icon" />
+          <span>{title}</span>
+          {badgeText && (
+            <span className="section-badge">{badgeText}</span>
+          )}
+        </div>
+        <div className="expand-controls">
+          {expandedSections[sectionKey] ? (
+            <Minus className="expand-icon" />
+          ) : (
+            <Plus className="expand-icon" />
+          )}
+        </div>
+      </div>
+      
+      {expandedSections[sectionKey] && (
+        <div className="card-content">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+});
 
 const CreationLot = ({ sidebarCollapsed = false }) => {
   const navigate = useNavigate();
@@ -37,39 +113,43 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
     typeLotId: '',
     nombreSinistresRecu: '',
     nombreSinistresDeclare: '',
-    raisonSocialeClient: '' // champ pour affichage client
+    raisonSocialeClient: '' 
   });
 
-  const [infosPolice, setInfosPolice] = useState(null); // infos récupérées
+  const [infosPolice, setInfosPolice] = useState(null); 
   const [validationErrors, setValidationErrors] = useState({});
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     navigate('/lots');
-  };
+  }, [navigate]);
 
-  const toggleSection = (sectionName) => {
+  const toggleSection = useCallback((sectionName) => {
     setExpandedSections(prev => ({
       ...prev,
       [sectionName]: !prev[sectionName]
     }));
-  };
+  }, []);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = useCallback((field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
     
-    // Effacer l'erreur de validation pour ce champ
-    if (validationErrors[field] && value.trim()) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [field]: null
-      }));
+   
+    if (value && value.trim()) {
+      setValidationErrors(prev => {
+        if (prev[field]) {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        }
+        return prev;
+      });
     }
-  };
+  }, []);
 
-  // Récupération automatique infos police
+  
   useEffect(() => {
     const fetchInfos = async () => {
       if (formData.numeroPolice.length === 10) {
@@ -84,13 +164,12 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
           };
           setInfosPolice(infos);
 
-          // Préremplissage de la raison sociale dans formData
+         
           setFormData(prev => ({
             ...prev,
             raisonSocialeClient: infos.raisonSocialeClient
           }));
 
-          // Ouvrir automatiquement la section des infos
           setExpandedSections(prev => ({
             ...prev,
             infos: true
@@ -114,19 +193,19 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
   const validateForm = () => {
     const errors = {};
     
-    // Validation du numéro de police
+   
     if (!formData.numeroPolice.trim()) {
       errors.numeroPolice = 'Le numéro de police est obligatoire';
     } else if (formData.numeroPolice.length !== 10) {
       errors.numeroPolice = 'Le numéro de police doit contenir exactement 10 caractères';
     }
     
-    // Validation du type de lot
+    
     if (!formData.typeLotId.trim()) {
       errors.typeLotId = 'Le type de lot est obligatoire';
     }
     
-    // Validation du nombre de sinistres reçus
+   
     if (!formData.nombreSinistresRecu || formData.nombreSinistresRecu === '') {
       errors.nombreSinistresRecu = 'Le nombre de sinistres reçus est obligatoire';
     } else {
@@ -136,7 +215,7 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
       }
     }
     
-    // Validation conditionnelle pour les lots externes
+    
     if (formData.typeLotId === '2') {
       if (!formData.nombreSinistresDeclare || formData.nombreSinistresDeclare === '') {
         errors.nombreSinistresDeclare = 'Le nombre de sinistres déclarés est obligatoire pour les lots externes';
@@ -199,7 +278,7 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
     }
   };
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setFormData({
       numeroPolice: '',
       typeLotId: '',
@@ -211,82 +290,7 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
     setError('');
     setSuccessMessage('');
     setInfosPolice(null);
-  };
-
-  const InputField = ({ label, value, onChange, error, required = false, type = 'text', placeholder = '', maxLength = null, disabled = false }) => (
-    <div className="input-field">
-      <label className={`input-label ${required ? 'required' : ''}`}>
-        {label}
-        {required && <span className="required-star">*</span>}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`input-control ${error ? 'error' : ''} ${disabled ? 'disabled' : ''}`}
-        placeholder={placeholder}
-        maxLength={maxLength}
-        disabled={disabled}
-      />
-      {error && <span className="error-message">{error}</span>}
-    </div>
-  );
-
-  const SelectField = ({ label, value, onChange, options, error, required = false }) => (
-    <div className="input-field">
-      <label className={`input-label ${required ? 'required' : ''}`}>
-        {label}
-        {required && <span className="required-star">*</span>}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`input-control ${error ? 'error' : ''}`}
-      >
-        <option value="">-- Sélectionner --</option>
-        {options.map(option => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {error && <span className="error-message">{error}</span>}
-    </div>
-  );
-
-  const ExpandableCard = ({ title, icon, children, sectionKey, badgeText = null }) => {
-    const IconElement = icon;
-    
-    return (
-      <div className="form-card">
-        <div 
-          className="card-header clickable" 
-          onClick={() => toggleSection(sectionKey)}
-        >
-          <div className="card-title">
-            <IconElement className="card-icon" />
-            <span>{title}</span>
-            {badgeText && (
-              <span className="section-badge">{badgeText}</span>
-            )}
-          </div>
-          <div className="expand-controls">
-            {expandedSections[sectionKey] ? (
-              <Minus className="expand-icon" />
-            ) : (
-              <Plus className="expand-icon" />
-            )}
-          </div>
-        </div>
-        
-        {expandedSections[sectionKey] && (
-          <div className="card-content">
-            {children}
-          </div>
-        )}
-      </div>
-    );
-  };
+  }, []);
 
   return (
     <div className={`create-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -374,12 +378,14 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
             icon={AlertCircle} 
             sectionKey="obligatoires"
             badgeText="Requis"
+            expandedSections={expandedSections}
+            onToggle={toggleSection}
           >
             <div className="input-grid">
               <InputField
                 label="Numéro de Police"
                 value={formData.numeroPolice}
-                onChange={(value) => handleInputChange('numeroPolice', value)}
+                onChange={(e) => handleInputChange('numeroPolice', e.target.value)}
                 error={validationErrors.numeroPolice}
                 required
                 placeholder="Ex: 1234567890 (10 caractères)"
@@ -389,7 +395,7 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
               <SelectField
                 label="Type de Lot"
                 value={formData.typeLotId}
-                onChange={(value) => handleInputChange('typeLotId', value)}
+                onChange={(e) => handleInputChange('typeLotId', e.target.value)}
                 error={validationErrors.typeLotId}
                 required
                 options={[
@@ -401,7 +407,7 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Nombre de Sinistres Reçus"
                 value={formData.nombreSinistresRecu}
-                onChange={(value) => handleInputChange('nombreSinistresRecu', value)}
+                onChange={(e) => handleInputChange('nombreSinistresRecu', e.target.value)}
                 error={validationErrors.nombreSinistresRecu}
                 required
                 type="number"
@@ -412,7 +418,7 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
                 <InputField
                   label="Nombre de Sinistres Déclarés"
                   value={formData.nombreSinistresDeclare}
-                  onChange={(value) => handleInputChange('nombreSinistresDeclare', value)}
+                  onChange={(e) => handleInputChange('nombreSinistresDeclare', e.target.value)}
                   error={validationErrors.nombreSinistresDeclare}
                   required
                   type="number"
@@ -428,6 +434,8 @@ const CreationLot = ({ sidebarCollapsed = false }) => {
               icon={Info} 
               sectionKey="infos"
               badgeText="Auto-remplies"
+              expandedSections={expandedSections}
+              onToggle={toggleSection}
             >
               <div className="input-grid">
                 <InputField

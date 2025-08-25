@@ -5,21 +5,21 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   transition: all 0.3s ease;
   
-  /* Ajustements pour éviter la superposition */
-  margin-left: 250px; /* Largeur sidebar normale */
-  padding-top: 104px; /* 80px navbar + 24px espacement */
+  
+  margin-left: 250px; 
+  padding-top: 104px;
   box-sizing: border-box;
 }
 
 .create-container.sidebar-collapsed {
-  margin-left: 64px; /* Largeur sidebar collapsed */
+  margin-left: 64px; 
 }
 
-/* Media queries pour la responsivité */
+
 @media (max-width: 768px) {
   .create-container {
     margin-left: 0;
-    padding-top: 88px; /* 64px navbar mobile + 24px espacement */
+    padding-top: 88px;
     padding-left: 16px;
     padding-right: 16px;
   }
@@ -31,7 +31,7 @@
 
 @media (max-width: 480px) {
   .create-container {
-    padding-top: 80px; /* 56px navbar très petit écran + 24px espacement */
+    padding-top: 80px; 
     padding-left: 16px;
     padding-right: 16px;
   }
@@ -96,7 +96,7 @@
   gap: 8px;
 }
 
-/* Suppression du background orange des icônes */
+
 .status-icon {
   width: 20px;
   height: 20px;
@@ -166,7 +166,7 @@
   font-weight: 500;
 }
 
-/* Suppression du background orange des icônes */
+
 .alert-icon {
   width: 20px;
   height: 20px;
@@ -252,7 +252,7 @@
   color: #111827;
 }
 
-/* Suppression du background orange des icônes */
+
 .card-icon {
   width: 20px;
   height: 20px;
@@ -275,7 +275,7 @@
   align-items: center;
 }
 
-/* Suppression du background orange des icônes */
+
 .expand-icon {
   width: 16px;
   height: 16px;
@@ -392,7 +392,7 @@ select.input-control {
   cursor: not-allowed;
 }
 
-/* Suppression du background orange des icônes */
+
 .btn-icon {
   width: 16px;
   height: 16px;
@@ -459,7 +459,7 @@ select.input-control {
   border: 1px solid #fde68a;
 }
 
-/* Suppression du background orange des icônes */
+
 .help-icon {
   width: 16px;
   height: 16px;
@@ -475,7 +475,7 @@ select.input-control {
   100% { transform: rotate(360deg); }
 }
 
-/* ✅ SECTION IMPORTATION DE FICHIER PDF - NOUVELLE SECTION COMPLÈTE */
+
 .file-upload-section {
   background: white;
   border-radius: 12px;
@@ -630,7 +630,7 @@ select.input-control {
   font-style: italic;
 }
 
-/* État avec fichier sélectionné */
+
 .file-selected-info {
   display: flex;
   align-items: center;
@@ -685,7 +685,7 @@ select.input-control {
   background: none !important;
 }
 
-/* Animation de chargement pour l'upload */
+
 .file-uploading {
   display: flex;
   align-items: center;
@@ -711,7 +711,7 @@ select.input-control {
   font-weight: 500;
 }
 
-/* Erreur de fichier */
+
 .file-error {
   display: flex;
   align-items: center;
@@ -778,7 +778,7 @@ select.input-control {
   margin-bottom: 12px;
 }
 
-/* Suppression du background orange des icônes */
+
 .validateur-icon {
   width: 20px;
   height: 20px;
@@ -870,7 +870,7 @@ select.input-control {
   to { transform: rotate(360deg); }
 }
 
-/* Global fix pour toutes les icônes Lucide React */
+
 svg {
   background: none !important;
 }
@@ -888,7 +888,7 @@ svg {
 @media (max-width: 768px) {
   .create-container {
     padding: 16px;
-    padding-top: 88px; /* Navbar mobile + espacement */
+    padding-top: 88px; 
   }
   
   .create-container.sidebar-collapsed {
@@ -935,7 +935,7 @@ svg {
     width: 100%;
   }
 
-  /* Responsive pour la section fichier */
+  
   .file-upload-section {
     padding: 16px;
     margin-bottom: 16px;
@@ -966,7 +966,7 @@ svg {
 
 @media (max-width: 480px) {
   .create-container {
-    padding-top: 80px; /* Navbar très petit écran + espacement */
+    padding-top: 80px; 
   }
 
   .file-upload-container {

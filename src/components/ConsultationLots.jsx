@@ -22,7 +22,7 @@ const ConsultationLots = ({ sidebarCollapsed }) => {
     numeroPolice: '',
     dateDebut: '',
     dateFin: '',
-    gestionnaire: '', // <== ajouté
+    gestionnaire: '',
     typeRecherche: 'EXACTE'
   });
   const [results, setResults] = useState([]);
@@ -32,6 +32,29 @@ const ConsultationLots = ({ sidebarCollapsed }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
+
+ 
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    
+   
+    setResults([]);
+    setError('');
+    setSuccessMessage('');
+    setCurrentPage(1);
+    setTotalPages(1);
+    setTotalResults(0);
+    
+   
+    setSearchParams({
+      numeroLot: '',
+      numeroPolice: '',
+      dateDebut: '',
+      dateFin: '',
+      gestionnaire: '',
+      typeRecherche: 'EXACTE'
+    });
+  };
 
   const handleSearch = async () => {
     setLoading(true);
@@ -84,6 +107,7 @@ const ConsultationLots = ({ sidebarCollapsed }) => {
       numeroPolice: '',
       dateDebut: '',
       dateFin: '',
+      gestionnaire: '',
       typeRecherche: 'EXACTE'
     });
     setResults([]);
@@ -116,17 +140,28 @@ const ConsultationLots = ({ sidebarCollapsed }) => {
 
       <div className="tabs-container">
         <div className="tabs-wrapper">
-          <button className={`tab-button ${activeTab === 'numeroLot' ? 'active' : ''}`} onClick={() => setActiveTab('numeroLot')}>
+          <button 
+            className={`tab-button ${activeTab === 'numeroLot' ? 'active' : ''}`} 
+            onClick={() => handleTabChange('numeroLot')}
+          >
             <Search className="tab-icon" /> Par Numéro
           </button>
-          <button className={`tab-button ${activeTab === 'by-gestionnaire' ? 'active' : ''}`} onClick={() => setActiveTab('by-gestionnaire')}>
+          <button 
+            className={`tab-button ${activeTab === 'by-gestionnaire' ? 'active' : ''}`} 
+            onClick={() => handleTabChange('by-gestionnaire')}
+          >
             <Search className="tab-icon" /> Par Gestionnaire
           </button>
-
-          <button className={`tab-button ${activeTab === 'by-police' ? 'active' : ''}`} onClick={() => setActiveTab('by-police')}>
+          <button 
+            className={`tab-button ${activeTab === 'by-police' ? 'active' : ''}`} 
+            onClick={() => handleTabChange('by-police')}
+          >
             <Calendar className="tab-icon" /> Par Police + Période
           </button>
-          <button className={`tab-button ${activeTab === 'combinee' ? 'active' : ''}`} onClick={() => setActiveTab('combinee')}>
+          <button 
+            className={`tab-button ${activeTab === 'combinee' ? 'active' : ''}`} 
+            onClick={() => handleTabChange('combinee')}
+          >
             <Search className="tab-icon" /> Recherche Combinée
           </button>
         </div>
@@ -136,7 +171,6 @@ const ConsultationLots = ({ sidebarCollapsed }) => {
         {error && <div className="alert alert-error">{error}</div>}
         {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
-        {/* ✅ CORRECTION : Utilisation de form-grid-2 pour alignement sur même ligne */}
         <div className="form-content">
           {activeTab === 'numeroLot' && (
             <div className="form-grid form-grid-2">

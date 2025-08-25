@@ -1,4 +1,3 @@
-// 📁 src/services/sinistreService.js
 import { getAuthToken, setAuthToken, isTokenValid, clearAuthToken } from '../config/auth';
 
 const API_BASE_URL = 'http://localhost:8089/rest/api/v1/consultation/sinistres';
@@ -6,19 +5,14 @@ const API_BASE_URL = 'http://localhost:8089/rest/api/v1/consultation/sinistres';
 class SinistreService {
   
   constructor() {
-    // ✅ Utilisation de la fonction centralisée au lieu de stocker le token localement
     this.token = getAuthToken();
     console.log('🚀 SinistreService initialisé avec token centralisé');
   }
 
-  /**
-   * Définit le token d'authentification
-   * ✅ Utilise maintenant la configuration centralisée
-   * @param {string} token - Token JWT à définir
-   */
+  
   setToken(token) {
     this.token = token;
-    setAuthToken(token); // ✅ Fonction centralisée
+    setAuthToken(token); 
     console.log('🔑 Token défini:', token ? 'Oui' : 'Non');
   }
 async getEtatsSinistre() {
@@ -34,7 +28,7 @@ async getEtatsSinistre() {
   } catch (error) {
     console.error('❌ Erreur récupération états de sinistre:', error);
     
-    // Fallback avec TOUS les états (au lieu de seulement 5)
+    
     console.log('🔄 Utilisation des états de fallback complets');
     return {
       data: [
@@ -64,13 +58,8 @@ async getEtatsSinistre() {
     };
   }
 }
-  /**
-   * Récupère un token depuis Keycloak
-   * ✅ Mise à jour pour utiliser la configuration centralisée
-   * @param {string} username - Nom d'utilisateur
-   * @param {string} password - Mot de passe
-   * @returns {Promise<string>} Token d'accès
-   */
+  //Récupère un token depuis Keycloak
+   
   async getTokenFromKeycloak(username, password) {
     try {
       const tokenUrl = 'https://access-dy.rmaassurance.com/auth/realms/rma-ad/protocol/openid-connect/token';
@@ -99,12 +88,12 @@ async getEtatsSinistre() {
       if (response.ok) {
         const data = await response.json();
         
-        // ✅ Validation du token reçu
+        //  Validation du token reçu
         if (!data.access_token) {
           throw new Error('Token d\'accès manquant dans la réponse');
         }
         
-        // ✅ Utilisation de la configuration centralisée
+        //  Utilisation de la configuration centralisée
         this.setToken(data.access_token);
         console.log('✅ Authentification réussie');
         
@@ -125,19 +114,13 @@ async getEtatsSinistre() {
     }
   }
 
-  /**
-   * Effectue un appel API avec gestion centralisée de l'authentification
-   * ✅ Mis à jour pour utiliser la configuration centralisée
-   * @param {string} url - URL de l'API
-   * @param {object} options - Options de la requête
-   * @returns {Promise<object>} Réponse de l'API
-   */
+  
   async apiCall(url, options = {}) {
     try {
       console.log('🌐 Appel API:', url);
       console.log('📤 Options:', options);
       
-      const currentToken = getAuthToken(); // ✅ Toujours le plus récent
+      const currentToken = getAuthToken(); 
       
       const headers = {
         'Content-Type': 'application/json',
@@ -145,7 +128,6 @@ async getEtatsSinistre() {
         ...options.headers
       };
 
-      // ✅ Validation et ajout du token avec gestion centralisée
       if (currentToken && isTokenValid(currentToken)) {
         headers['Authorization'] = `Bearer ${currentToken}`;
         console.log('🔑 Token valide ajouté aux headers (sinistres)');
@@ -166,7 +148,6 @@ async getEtatsSinistre() {
 
       console.log('📥 Réponse API status:', response.status);
 
-      // ✅ Gestion spécifique des erreurs d'authentification
       if (response.status === 401) {
         console.error('🚫 Erreur 401 - Token invalide ou expiré');
         clearAuthToken();
@@ -201,7 +182,6 @@ async getEtatsSinistre() {
       const apiResponse = await response.json();
       console.log('✅ ApiResponse reçue:', apiResponse);
       
-      // ✅ Validation de la réponse
       if (apiResponse.success === false) {
         throw new Error(apiResponse.message || 'Erreur inconnue');
       }
@@ -215,7 +195,6 @@ async getEtatsSinistre() {
     } catch (error) {
       console.error('❌ Erreur API:', error);
       
-      // ✅ Gestion spécifique des erreurs réseau
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         throw new Error('Impossible de se connecter au serveur. Vérifiez que le backend est démarré.');
       }
@@ -224,27 +203,19 @@ async getEtatsSinistre() {
     }
   }
 
-  /**
-   * Formate une date pour le backend (DD/MM/YYYY)
-   * ✅ Amélioré avec plus de validations
-   * @param {string} dateStr - Date à formater
-   * @returns {string} Date formatée
-   */
+
   formatDateForBackend(dateStr) {
     if (!dateStr || typeof dateStr !== 'string') return '';
     
     try {
       const trimmedDate = dateStr.trim();
       
-      // Format YYYY-MM-DD vers DD/MM/YYYY
       if (trimmedDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
         const [year, month, day] = trimmedDate.split('-');
         return `${day}/${month}/${year}`;
       }
       
-      // Déjà au bon format DD/MM/YYYY
       if (trimmedDate.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-        // Validation supplémentaire : vérifier que c'est une date valide
         const [day, month, year] = trimmedDate.split('/');
         const date = new Date(year, month - 1, day);
         if (date.getFullYear() == year && 
@@ -254,7 +225,6 @@ async getEtatsSinistre() {
         }
       }
       
-      // Tentative avec constructeur Date
       const date = new Date(trimmedDate);
       if (!isNaN(date.getTime())) {
         const day = String(date.getDate()).padStart(2, '0');
@@ -271,22 +241,15 @@ async getEtatsSinistre() {
     }
   }
 
-  /**
-   * Formate une date pour le frontend (YYYY-MM-DD)
-   * ✅ Amélioré avec plus de validations
-   * @param {string} dateStr - Date à formater
-   * @returns {string} Date formatée
-   */
+  
   formatDateForFrontend(dateStr) {
     if (!dateStr || typeof dateStr !== 'string') return '';
     
     try {
       const trimmedDate = dateStr.trim();
       
-      // Format DD/MM/YYYY vers YYYY-MM-DD
       if (trimmedDate.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
         const [day, month, year] = trimmedDate.split('/');
-        // Validation de la date
         const date = new Date(year, month - 1, day);
         if (date.getFullYear() == year && 
             date.getMonth() == month - 1 && 
@@ -295,7 +258,6 @@ async getEtatsSinistre() {
         }
       }
       
-      // Déjà au bon format YYYY-MM-DD
       if (trimmedDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
         return trimmedDate;
       }
@@ -308,11 +270,8 @@ async getEtatsSinistre() {
     }
   }
 
-  /**
-   * Teste la connexion à l'API
-   * ✅ Mis à jour pour utiliser la configuration centralisée
-   * @returns {Promise<object>} Résultat du test
-   */
+  // Teste la connexion à l'API
+   
   async testConnection() {
     try {
       console.log('🔧 Test de connexion...');
@@ -351,7 +310,7 @@ async getEtatsSinistre() {
     }
   }
 
-  // ✅ Validation d'entrée pour éviter les injections
+  // Validation d'entrée pour éviter les injections
   validateInput(input, fieldName, maxLength = 255) {
     if (!input || typeof input !== 'string') {
       throw new Error(`${fieldName} est obligatoire`);
@@ -378,7 +337,7 @@ async getEtatsSinistre() {
   async rechercherParNumero(numSinistre, typeRecherche = 'EXACTE') {
     const validatedNumSinistre = this.validateInput(numSinistre, 'Le numéro de sinistre', 50);
     
-    // ✅ Validation du type de recherche
+    // Validation du type de recherche
     const validTypes = ['EXACTE', 'CONTIENT', 'COMMENCE_PAR', 'SE_TERMINE_PAR'];
     if (!validTypes.includes(typeRecherche)) {
       typeRecherche = 'EXACTE';
@@ -394,7 +353,6 @@ async getEtatsSinistre() {
   }
 
   async rechercherParNomPrenom(nom, prenom, typeRecherche = 'CONTIENT') {
-    // ✅ Validation : au moins un des deux champs doit être renseigné
     const nomTrimmed = nom ? nom.trim() : '';
     const prenomTrimmed = prenom ? prenom.trim() : '';
     
@@ -412,7 +370,6 @@ async getEtatsSinistre() {
       params.append('prenom', prenomTrimmed);
     }
     
-    // ✅ Validation du type de recherche
     const validTypes = ['EXACTE', 'CONTIENT', 'COMMENCE_PAR', 'SE_TERMINE_PAR'];
     if (!validTypes.includes(typeRecherche)) {
       typeRecherche = 'CONTIENT';
@@ -426,10 +383,8 @@ async getEtatsSinistre() {
   async rechercherParNatureMaladie(natureMaladie, typeRecherche = 'CONTIENT', limit = 50) {
     const validatedNatureMaladie = this.validateInput(natureMaladie, 'La nature de maladie', 200);
     
-    // ✅ Validation de la limite
     const validatedLimit = Math.max(1, Math.min(parseInt(limit) || 50, 100));
     
-    // ✅ Validation du type de recherche
     const validTypes = ['EXACTE', 'CONTIENT', 'COMMENCE_PAR', 'SE_TERMINE_PAR'];
     if (!validTypes.includes(typeRecherche)) {
       typeRecherche = 'CONTIENT';
@@ -448,7 +403,6 @@ async getEtatsSinistre() {
   async rechercherParEtat(etatSinistre, typeRecherche = 'EXACTE') {
     const validatedEtat = this.validateInput(etatSinistre, 'L\'état du sinistre', 50);
     
-    // ✅ Validation du type de recherche
     const validTypes = ['EXACTE', 'CONTIENT', 'COMMENCE_PAR', 'SE_TERMINE_PAR'];
     if (!validTypes.includes(typeRecherche)) {
       typeRecherche = 'EXACTE';
@@ -464,7 +418,6 @@ async getEtatsSinistre() {
   }
 
   async rechercherCombine(criteres, typeRecherche = 'CONTIENT', limit = 50) {
-    // ✅ Validation et nettoyage des critères
     const criteresNettoyes = {};
     let hasValidCriteria = false;
 
@@ -497,16 +450,13 @@ async getEtatsSinistre() {
       throw new Error('Au moins un critère de recherche doit être renseigné');
     }
 
-    // ✅ Validation de la limite
     const validatedLimit = Math.max(1, Math.min(parseInt(limit) || 50, 100));
     
-    // ✅ Validation du type de recherche
     const validTypes = ['EXACTE', 'CONTIENT', 'COMMENCE_PAR', 'SE_TERMINE_PAR'];
     const validatedTypeRecherche = validTypes.includes(typeRecherche) ? typeRecherche : 'CONTIENT';
 
     const params = new URLSearchParams();
     
-    // Ajout des critères validés
     Object.entries(criteresNettoyes).forEach(([key, value]) => {
       params.append(key, value);
     });
@@ -519,7 +469,6 @@ async getEtatsSinistre() {
   }
 
   async creerSinistreSansLot(sinistreData) {
-    // ✅ Validation complète des données obligatoires
     const validatedData = {
       numPolice: this.validateInput(sinistreData.numPolice, 'Le numéro de police', 50),
       numAffiliation: this.validateInput(sinistreData.numAffiliation, 'Le numéro d\'affiliation', 50),
@@ -527,7 +476,6 @@ async getEtatsSinistre() {
       dateSurv: this.validateInput(sinistreData.dateSurv, 'La date de survenance', 10)
     };
 
-    // ✅ Validation et formatage de la date de survenance
     const formattedDateSurv = this.formatDateForBackend(validatedData.dateSurv);
     if (!formattedDateSurv) {
       throw new Error('Format de date de survenance invalide');
@@ -557,14 +505,12 @@ async getEtatsSinistre() {
   }
 
   async modifierSinistre(numeroSinistre, sinistreData) {
-    // ✅ Validation des données obligatoires
     const validatedNumeroSinistre = this.validateInput(numeroSinistre, 'Le numéro de sinistre', 50);
     const validatedCodeDecl = this.validateInput(sinistreData.codeDecl, 'Le type de déclaration', 10);
     const validatedDateSurv = this.validateInput(sinistreData.dateSurv, 'La date de survenance', 10);
 
     console.log('💾 Modification du sinistre - données reçues:', sinistreData);
 
-    // ✅ Formatage et validation des données optionnelles
     const dataToSend = {
       codeDecl: validatedCodeDecl,
       dateSurv: this.formatDateForBackend(validatedDateSurv),
@@ -596,7 +542,6 @@ async getEtatsSinistre() {
 
     console.log('🔍 Récupération des détails pour:', validatedNumSinistre);
     
-    // ✅ Tentative avec endpoint dédié
     try {
       const urlDetails = `${API_BASE_URL}/${encodeURIComponent(validatedNumSinistre)}/details`;
       console.log('🎯 Tentative avec endpoint /details:', urlDetails);
@@ -632,7 +577,6 @@ async getEtatsSinistre() {
       console.log('❌ Erreur avec /details:', error.message);
     }
     
-    // ✅ Fallback vers recherche par numéro
     try {
       console.log('🔄 Fallback vers recherche par numéro');
       const fallbackResponse = await this.rechercherParNumero(validatedNumSinistre, 'EXACTE');
@@ -659,10 +603,7 @@ async getEtatsSinistre() {
     
     throw new Error('Impossible de récupérer les détails du sinistre');
   }
-/**
- * Récupère tous les types de déclaration disponibles
- * @returns {Promise<object>} Liste des types de déclaration avec codes et libellés
- */
+
 async getTypesDeclaration() {
   try {
     console.log('📋 Récupération des types de déclaration...');
@@ -676,7 +617,6 @@ async getTypesDeclaration() {
   } catch (error) {
     console.error('❌ Erreur récupération types de déclaration:', error);
     
-    // Fallback en cas d'erreur - mêmes données que le backend
     console.log('🔄 Utilisation des types de fallback');
     return {
       data: [
@@ -694,98 +634,130 @@ async getTypesDeclaration() {
   }
 }
   async genererDocumentSinistre(numPolice, numFiliale, numAffiliation, numSinistre) {
-    // ✅ Validation de tous les paramètres
-    const validatedParams = {
-      numPolice: this.validateInput(numPolice, 'Le numéro de police', 50),
-      numFiliale: this.validateInput(numFiliale, 'Le numéro de filiale', 50),
-      numAffiliation: this.validateInput(numAffiliation, 'Le numéro d\'affiliation', 50),
-      numSinistre: this.validateInput(numSinistre, 'Le numéro de sinistre', 50)
+  const validatedParams = {
+    numPolice: this.validateInput(numPolice, 'Le numéro de police', 50),
+    numFiliale: this.validateInput(numFiliale, 'Le numéro de filiale', 50),
+    numAffiliation: this.validateInput(numAffiliation, 'Le numéro d\'affiliation', 50),
+    numSinistre: this.validateInput(numSinistre, 'Le numéro de sinistre', 50)
+  };
+
+  console.log('📄 Génération de document PDF pour:', validatedParams);
+
+  try {
+    const url = `${API_BASE_URL}/${encodeURIComponent(validatedParams.numPolice)}/${encodeURIComponent(validatedParams.numFiliale)}/${encodeURIComponent(validatedParams.numAffiliation)}/${encodeURIComponent(validatedParams.numSinistre)}/document`;
+    console.log('🌐 URL de génération:', url);
+
+    const currentToken = getAuthToken();
+    if (!currentToken || !isTokenValid(currentToken)) {
+      throw new Error('Authentification requise pour générer le document');
+    }
+
+    // Headers corrigés pour éviter l'erreur 406
+    const headers = {
+      'Accept': '*/*',  // Accept tout type de contenu
+      'Authorization': `Bearer ${currentToken}`,
+      'Cache-Control': 'no-cache'
     };
 
-    console.log('📄 Génération de document PDF pour:', validatedParams);
+    console.log('🔑 Headers envoyés:', headers);
 
-    try {
-      const url = `${API_BASE_URL}/${encodeURIComponent(validatedParams.numPolice)}/${encodeURIComponent(validatedParams.numFiliale)}/${encodeURIComponent(validatedParams.numAffiliation)}/${encodeURIComponent(validatedParams.numSinistre)}/document`;
-      console.log('🌐 URL de génération:', url);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+      credentials: 'include'
+    });
 
-      // ✅ Utilisation de la configuration centralisée pour l'authentification
-      const currentToken = getAuthToken();
-      if (!currentToken || !isTokenValid(currentToken)) {
-        throw new Error('Authentification requise pour générer le document');
-      }
+    console.log('📥 Réponse génération PDF status:', response.status);
+    console.log('📥 Content-Type:', response.headers.get('content-type'));
 
-      const headers = {
-        'Accept': 'application/pdf',
-        'Authorization': `Bearer ${currentToken}`
-      };
+    if (response.status === 401) {
+      clearAuthToken();
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
 
-      console.log('🔑 Token ajouté pour la génération PDF');
+    if (response.status === 406) {
+      console.error('❌ Erreur 406 - Headers non acceptés');
+      console.log('📋 Headers de réponse:', [...response.headers.entries()]);
+      throw new Error('Format de réponse non accepté par le serveur. Vérifiez la configuration du backend.');
+    }
 
-      const response = await fetch(url, {
-        method: 'GET',
-        headers,
-        credentials: 'include'
-      });
-
-      console.log('📥 Réponse génération PDF status:', response.status);
-
-      // ✅ Gestion spécifique des erreurs d'authentification
-      if (response.status === 401) {
-        clearAuthToken();
-        throw new Error('Session expirée. Veuillez vous reconnecter.');
-      }
-
-      if (!response.ok) {
-        let errorMessage = `Erreur ${response.status}`;
+    if (!response.ok) {
+      let errorMessage = `Erreur ${response.status}`;
+      
+      try {
+        const contentType = response.headers.get('content-type');
+        console.log('❌ Content-Type de l\'erreur:', contentType);
         
-        try {
+        if (contentType && contentType.includes('application/json')) {
           const errorData = await response.json();
-          console.log('❌ Données d\'erreur PDF:', errorData);
+          console.log('❌ Données d\'erreur PDF (JSON):', errorData);
+          
+          if (errorData.message && errorData.message.includes('mission')) {
+            console.log('🔍 ERREUR SPÉCIFIQUE CV DÉTECTÉE:', errorData.message);
+            throw new Error(`Problème mission CV: ${errorData.message}`);
+          }
+          
           if (errorData.message) {
             errorMessage = errorData.message;
           } else if (errorData.error) {
             errorMessage = errorData.error;
           }
-        } catch {
-          errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        } else {
+          const errorText = await response.text();
+          console.log('❌ Données d\'erreur PDF (TEXT):', errorText);
+          errorMessage = errorText || errorMessage;
         }
-        throw new Error(errorMessage);
+      } catch (parseError) {
+        console.log('❌ Impossible de parser l\'erreur:', parseError);
+        errorMessage = `Erreur ${response.status}: ${response.statusText}`;
       }
-
-      const blob = await response.blob();
-      console.log('📦 Taille du blob PDF:', blob.size, 'bytes');
       
-      if (blob.size === 0) {
-        throw new Error('Le document généré est vide');
-      }
-
-      // ✅ Validation du type MIME
-      if (blob.type && !blob.type.includes('pdf')) {
-        console.warn('⚠️ Type MIME inattendu:', blob.type);
-      }
-
-      return {
-        blob,
-        filename: `document_sinistre_${validatedParams.numSinistre}.pdf`,
-        success: true,
-        message: 'Document généré avec succès'
-      };
-
-    } catch (error) {
-      console.error('❌ Erreur génération PDF:', error);
-      throw error;
+      console.log('❌ Message d\'erreur final:', errorMessage);
+      throw new Error(errorMessage);
     }
-  }
 
-  /**
-   * Télécharge un blob en tant que fichier
-   * ✅ Amélioré avec gestion d'erreurs
-   * @param {Blob} blob - Blob à télécharger
-   * @param {string} filename - Nom du fichier
-   */
+    console.log('✅ Réponse OK - Lecture du blob...');
+    const blob = await response.blob();
+    console.log('📦 Taille du blob PDF:', blob.size, 'bytes');
+    console.log('📦 Type du blob:', blob.type);
+    
+    if (blob.size === 0) {
+      throw new Error('Le document généré est vide');
+    }
+
+    // Vérification du type de blob plus flexible
+    if (blob.type && !blob.type.includes('pdf') && !blob.type.includes('octet-stream')) {
+      console.warn('⚠️ Type MIME inattendu:', blob.type);
+      
+      if (blob.type.includes('json') || blob.type.includes('text')) {
+        const errorText = await blob.text();
+        console.log('❌ Erreur cachée dans le blob:', errorText);
+        throw new Error('Erreur serveur: ' + errorText);
+      }
+    }
+
+    console.log('✅ Document PDF généré avec succès');
+    return {
+      blob,
+      filename: `document_sinistre_${validatedParams.numSinistre}.pdf`,
+      success: true,
+      message: 'Document généré avec succès'
+    };
+
+  } catch (error) {
+    console.error('❌ Erreur génération PDF:', error);
+    
+    // Gestion spécifique des erreurs CV
+    if (error.message && error.message.includes('mission')) {
+      console.error('🔴 ERREUR CV SPÉCIFIQUE:', error.message);
+    }
+    
+    throw error;
+  }
+}
+  
   downloadBlob(blob, filename) {
     try {
-      // ✅ Validation des paramètres
       if (!blob || !(blob instanceof Blob)) {
         throw new Error('Blob invalide pour le téléchargement');
       }
@@ -794,10 +766,8 @@ async getTypesDeclaration() {
         filename = 'document.pdf';
       }
       
-      // ✅ Nettoyage du nom de fichier
       const cleanFilename = filename.replace(/[<>:"/\\|?*]/g, '_');
       
-      // ✅ Vérification de la taille du blob
       if (blob.size === 0) {
         throw new Error('Le fichier est vide');
       }
@@ -808,12 +778,11 @@ async getTypesDeclaration() {
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = cleanFilename;
-      link.style.display = 'none'; // ✅ Cacher le lien
+      link.style.display = 'none'; 
       
       document.body.appendChild(link);
       link.click();
       
-      // ✅ Nettoyage après téléchargement
       setTimeout(() => {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(downloadUrl);
@@ -826,18 +795,12 @@ async getTypesDeclaration() {
     }
   }
 
-  /**
-   * Gère les erreurs API avec messages contextuels
-   * ✅ Amélioré avec plus de cas d'erreurs
-   * @param {Error} error - Erreur à traiter
-   * @returns {string} Message d'erreur formaté
-   */
+ 
   handleAPIError(error) {
     const message = error?.message || '';
     
     console.log('🚨 Gestion de l\'erreur:', message);
     
-    // ✅ Erreurs de validation des champs
     if (message.includes('contient des caractères non autorisés')) {
       return 'Caractères spéciaux non autorisés dans les champs de saisie';
     }
@@ -848,7 +811,6 @@ async getTypesDeclaration() {
       return message;
     }
     
-    // ✅ Erreurs d'authentification
     if (message.includes('Session expirée') || message.includes('Authentification requise')) {
       return message;
     }
@@ -859,7 +821,6 @@ async getTypesDeclaration() {
       return 'Vous n\'avez pas les permissions nécessaires pour cette opération';
     }
     
-    // ✅ Erreurs de modification de sinistre
     if (message.includes('ne peut pas être modifié car il est dans l\'état')) {
       return message; 
     }
@@ -885,7 +846,6 @@ async getTypesDeclaration() {
       return message; 
     }
     
-    // ✅ Erreurs de génération de documents
     if (message.includes('Aucune édition disponible pour l\'état du sinistre')) {
       return 'Aucun document disponible pour cet état de sinistre. États supportés: REGLE, REJETE, EN_ATTENTE_FACTURE_DEFINITIVE, EN_ATTENTE_COMPLEMENT_INFORMATION, EN_ATTENTE_CONTRE_VISITE';
     }
@@ -899,7 +859,6 @@ async getTypesDeclaration() {
       return 'Erreur lors de la génération du document. Veuillez réessayer.';
     }
     
-    // ✅ Erreurs de recherche
     if (message.includes('Sinistre non trouvé')) {
       return 'Sinistre non trouvé. Vérifiez les paramètres (police, filiale, affiliation, numéro sinistre)';
     }
@@ -916,7 +875,6 @@ async getTypesDeclaration() {
       return 'Assuré non trouvé avec ce numéro d\'affiliation';
     }
     
-    // ✅ Erreurs de validation obligatoire
     if (message.includes('obligatoire')) {
       return message; 
     }
@@ -924,7 +882,6 @@ async getTypesDeclaration() {
       return 'Format de date invalide. Utilisez le format DD/MM/YYYY ou YYYY-MM-DD';
     }
     
-    // ✅ Erreurs techniques
     if (message.includes('Erreur technique')) {
       return message; 
     }
@@ -935,7 +892,6 @@ async getTypesDeclaration() {
       return 'Erreur d\'authentification. Veuillez vous reconnecter.';
     }
     
-    // ✅ Erreurs réseau et de connectivité
     if (message.includes('CORS')) {
       return 'Erreur de connexion au serveur. Vérifiez la configuration CORS.';
     }
@@ -949,7 +905,6 @@ async getTypesDeclaration() {
       return 'Délai d\'attente dépassé. Le serveur met trop de temps à répondre.';
     }
     
-    // ✅ Erreurs de fichier et téléchargement
     if (message.includes('Erreur lors du téléchargement')) {
       return message;
     }
@@ -957,7 +912,6 @@ async getTypesDeclaration() {
       return 'Le fichier généré est vide';
     }
     
-    // ✅ Erreurs Keycloak spécifiques
     if (message.includes('invalid_grant')) {
       return 'Nom d\'utilisateur ou mot de passe incorrect';
     }
@@ -968,7 +922,6 @@ async getTypesDeclaration() {
       return 'Échec de l\'authentification. Vérifiez vos identifiants.';
     }
     
-    // ✅ Message par défaut avec plus de contexte
     if (message.length > 0) {
       return message;
     }
@@ -976,11 +929,7 @@ async getTypesDeclaration() {
     return 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter le support technique.';
   }
 
-  /**
-   * Récupère des statistiques sur l'état du service
-   * ✅ Nouvelle méthode utilitaire
-   * @returns {object} Statistiques du service
-   */
+  
   getServiceStats() {
     const currentToken = getAuthToken();
     return {
@@ -991,16 +940,11 @@ async getTypesDeclaration() {
     };
   }
 
-  /**
-   * Nettoie les ressources du service
-   * ✅ Nouvelle méthode pour le nettoyage
-   */
+  
   cleanup() {
     console.log('🧹 Nettoyage du SinistreService');
     this.token = null;
-    // Pas de clearAuthToken() ici car d'autres services peuvent l'utiliser
   }
 }
 
-// ✅ Export d'une instance singleton
 export default new SinistreService();

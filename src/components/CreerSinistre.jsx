@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   ArrowLeft, 
   User, 
@@ -31,6 +31,95 @@ const formatDateToDDMMYYYY = (isoDate) => {
   const [year, month, day] = isoDate.split('-');
   return `${day}/${month}/${year}`;
 };
+
+
+const InputField = React.memo(({ label, value, onChange, error, required = false, type = 'text', placeholder = '', maxLength = null }) => (
+  <div className="input-field">
+    <label className={`input-label ${required ? 'required' : ''}`}>
+      {label}
+      {required && <span className="required-star">*</span>}
+    </label>
+    <input
+      type={type}
+      value={value || ''}
+      onChange={onChange}
+      className={`input-control ${error ? 'error' : ''}`}
+      placeholder={placeholder}
+      maxLength={maxLength}
+    />
+    {error && <span className="error-message">{error}</span>}
+  </div>
+));
+
+const SelectField = React.memo(({ label, value, onChange, options, error, required = false }) => (
+  <div className="input-field">
+    <label className={`input-label ${required ? 'required' : ''}`}>
+      {label}
+      {required && <span className="required-star">*</span>}
+    </label>
+    <select
+      value={value || ''}
+      onChange={onChange}
+      className={`input-control ${error ? 'error' : ''}`}
+    >
+      <option value="">-- Sélectionner --</option>
+      {options.map(option => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+    {error && <span className="error-message">{error}</span>}
+  </div>
+));
+
+const TextAreaField = React.memo(({ label, value, onChange, error, placeholder = '', rows = 3 }) => (
+  <div className="input-field full-width">
+    <label className="input-label">{label}</label>
+    <textarea
+      value={value || ''}
+      onChange={onChange}
+      className={`input-control ${error ? 'error' : ''}`}
+      placeholder={placeholder}
+      rows={rows}
+    />
+    {error && <span className="error-message">{error}</span>}
+  </div>
+));
+
+const ExpandableCard = React.memo(({ title, icon, children, sectionKey, expandedSections, onToggle, badgeText = null }) => {
+  const IconElement = icon;
+  
+  return (
+    <div className="form-card">
+      <div 
+        className="card-header clickable" 
+        onClick={() => onToggle(sectionKey)}
+      >
+        <div className="card-title">
+          <IconElement className="card-icon" />
+          <span>{title}</span>
+          {badgeText && (
+            <span className="section-badge">{badgeText}</span>
+          )}
+        </div>
+        <div className="expand-controls">
+          {expandedSections[sectionKey] ? (
+            <Minus className="expand-icon" />
+          ) : (
+            <Plus className="expand-icon" />
+          )}
+        </div>
+      </div>
+      
+      {expandedSections[sectionKey] && (
+        <div className="card-content">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+});
 
 const CreerSinistre = ({ sidebarCollapsed = false }) => {
   const navigate = useNavigate();
@@ -74,7 +163,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
 
   const [validationErrors, setValidationErrors] = useState({});
 
-  // Chargement des types de déclaration
+  
   useEffect(() => {
     const loadTypesDeclaration = async () => {
       try {
@@ -83,7 +172,6 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
         setTypesDeclaration(response.data);
       } catch (error) {
         console.error('Erreur chargement types:', error);
-        // Les types de fallback sont déjà gérés dans le service
       } finally {
         setLoadingTypes(false);
       }
@@ -92,30 +180,36 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
     loadTypesDeclaration();
   }, []);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     navigate('/consultation/sinistres');
-  };
+  }, [navigate]);
 
-  const toggleSection = (sectionName) => {
+  const toggleSection = useCallback((sectionName) => {
     setExpandedSections(prev => ({
       ...prev,
       [sectionName]: !prev[sectionName]
     }));
-  };
+  }, []);
 
-  const handleInputChange = (field, value) => {
+  
+  const handleInputChange = useCallback((field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
     
-    if (validationErrors[field] && value.trim()) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [field]: null
-      }));
+    
+    if (value && value.trim()) {
+      setValidationErrors(prev => {
+        if (prev[field]) {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        }
+        return prev;
+      });
     }
-  };
+  }, []);
 
   const validateForm = () => {
     const errors = {};
@@ -179,13 +273,11 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
       setError('');
       setSuccess('');
 
-      // Préparer les données pour l'envoi
       const dataToSend = {
         ...formData,
         dateSurv: formatDateToDDMMYYYY(formData.dateSurv),
       };
 
-      // Formater les dates optionnelles seulement si elles sont remplies
       if (formData.dateDecl.trim()) {
         dataToSend.dateDecl = formatDateToDDMMYYYY(formData.dateDecl);
       }
@@ -194,19 +286,16 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
         dataToSend.dateOuve = formatDateToDDMMYYYY(formData.dateOuve);
       }
 
-      // Créer le FormData pour l'envoi
       const formToSend = new FormData();
       formToSend.append(
         'sinistre',
         new Blob([JSON.stringify(dataToSend)], { type: 'application/json' })
       );
       
-      // Ajouter le fichier s'il existe
       if (fichier) {
         formToSend.append('fichier', fichier);
       }
 
-      // Envoyer la requête
       const response = await fetch(
         'http://localhost:8089/rest/api/v1/consultation/sinistres/creer-sans-lot',
         {
@@ -224,15 +313,12 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
       }
 
       const result = await response.json();
-      
-      // Gérer la réponse selon la structure des données
       const sinistre = result.data || (Array.isArray(result.data) ? result.data[0] : null);
       
       setSuccess(
         `Sinistre créé avec succès ! Numéro: ${sinistre?.numSinistre || 'N/A'}`
       );
 
-      // Redirection après succès
       setTimeout(() => {
         if (sinistre?.numSinistre) {
           navigate(`/consultation/sinistres/${sinistre.numSinistre}/details`);
@@ -249,7 +335,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
     }
   };
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setFormData({
       numPolice: '',
       numAffiliation: '',
@@ -277,95 +363,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
     setError('');
     setSuccess('');
     setFichier(null);
-  };
-
-  const InputField = ({ label, value, onChange, error, required = false, type = 'text', placeholder = '', maxLength = null }) => (
-    <div className="input-field">
-      <label className={`input-label ${required ? 'required' : ''}`}>
-        {label}
-        {required && <span className="required-star">*</span>}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`input-control ${error ? 'error' : ''}`}
-        placeholder={placeholder}
-        maxLength={maxLength}
-      />
-      {error && <span className="error-message">{error}</span>}
-    </div>
-  );
-
-  const SelectField = ({ label, value, onChange, options, error, required = false }) => (
-    <div className="input-field">
-      <label className={`input-label ${required ? 'required' : ''}`}>
-        {label}
-        {required && <span className="required-star">*</span>}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`input-control ${error ? 'error' : ''}`}
-      >
-        <option value="">-- Sélectionner --</option>
-        {options.map(option => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {error && <span className="error-message">{error}</span>}
-    </div>
-  );
-
-  const TextAreaField = ({ label, value, onChange, error, placeholder = '', rows = 3 }) => (
-    <div className="input-field full-width">
-      <label className="input-label">{label}</label>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`input-control ${error ? 'error' : ''}`}
-        placeholder={placeholder}
-        rows={rows}
-      />
-      {error && <span className="error-message">{error}</span>}
-    </div>
-  );
-
-  const ExpandableCard = ({ title, icon, children, sectionKey, badgeText = null }) => {
-    const IconElement = icon;
-    
-    return (
-      <div className="form-card">
-        <div 
-          className="card-header clickable" 
-          onClick={() => toggleSection(sectionKey)}
-        >
-          <div className="card-title">
-            <IconElement className="card-icon" />
-            <span>{title}</span>
-            {badgeText && (
-              <span className="section-badge">{badgeText}</span>
-            )}
-          </div>
-          <div className="expand-controls">
-            {expandedSections[sectionKey] ? (
-              <Minus className="expand-icon" />
-            ) : (
-              <Plus className="expand-icon" />
-            )}
-          </div>
-        </div>
-        
-        {expandedSections[sectionKey] && (
-          <div className="card-content">
-            {children}
-          </div>
-        )}
-      </div>
-    );
-  };
+  }, []);
 
   return (
     <div className={`create-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -471,12 +469,14 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
             icon={AlertCircle} 
             sectionKey="obligatoires"
             badgeText="Requis"
+            expandedSections={expandedSections}
+            onToggle={toggleSection}
           >
             <div className="input-grid">
               <InputField
                 label="Numéro de Police"
                 value={formData.numPolice}
-                onChange={(value) => handleInputChange('numPolice', value)}
+                onChange={(e) => handleInputChange('numPolice', e.target.value)}
                 error={validationErrors.numPolice}
                 required
                 placeholder="Ex: 123456789"
@@ -486,7 +486,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Numéro d'Affiliation"
                 value={formData.numAffiliation}
-                onChange={(value) => handleInputChange('numAffiliation', value)}
+                onChange={(e) => handleInputChange('numAffiliation', e.target.value)}
                 error={validationErrors.numAffiliation}
                 required
                 placeholder="Ex: 987654"
@@ -521,7 +521,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Date de Survenance"
                 value={formData.dateSurv}
-                onChange={(value) => handleInputChange('dateSurv', value)}
+                onChange={(e) => handleInputChange('dateSurv', e.target.value)}
                 error={validationErrors.dateSurv}
                 required
                 type="date"
@@ -534,12 +534,14 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
             icon={Info} 
             sectionKey="optionnels"
             badgeText="Recommandées"
+            expandedSections={expandedSections}
+            onToggle={toggleSection}
           >
             <div className="input-grid">
               <InputField
                 label="Date de Déclaration"
                 value={formData.dateDecl}
-                onChange={(value) => handleInputChange('dateDecl', value)}
+                onChange={(e) => handleInputChange('dateDecl', e.target.value)}
                 error={validationErrors.dateDecl}
                 type="date"
                 placeholder="Auto si vide"
@@ -548,16 +550,15 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Montant Frais Engagés (DH)"
                 value={formData.montoFe}
-                onChange={(value) => handleInputChange('montoFe', value)}
+                onChange={(e) => handleInputChange('montoFe', e.target.value)}
                 error={validationErrors.montoFe}
-                type="number"
                 placeholder="Ex: 1500.50"
               />
               
               <InputField
                 label="Référence Externe"
                 value={formData.refExtSi}
-                onChange={(value) => handleInputChange('refExtSi', value)}
+                onChange={(e) => handleInputChange('refExtSi', e.target.value)}
                 error={validationErrors.refExtSi}
                 placeholder="Référence du sinistre"
                 maxLength={50}
@@ -566,7 +567,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Nature de la Maladie"
                 value={formData.natuMala}
-                onChange={(value) => handleInputChange('natuMala', value)}
+                onChange={(e) => handleInputChange('natuMala', e.target.value)}
                 error={validationErrors.natuMala}
                 placeholder="Description de la pathologie"
                 maxLength={200}
@@ -579,12 +580,14 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
             icon={Building} 
             sectionKey="avances"
             badgeText="Optionnel"
+            expandedSections={expandedSections}
+            onToggle={toggleSection}
           >
             <div className="input-grid">
               <InputField
                 label="Numéro Filiale"
                 value={formData.numFiliale}
-                onChange={(value) => handleInputChange('numFiliale', value)}
+                onChange={(e) => handleInputChange('numFiliale', e.target.value)}
                 placeholder="Code filiale"
                 maxLength={10}
               />
@@ -592,7 +595,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Numéro complement"
                 value={formData.numCompl}
-                onChange={(value) => handleInputChange('numCompl', value)}
+                onChange={(e) => handleInputChange('numCompl', e.target.value)}
                 placeholder="complement"
                 maxLength={10}
               />
@@ -600,7 +603,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Lieu (Parbe)"
                 value={formData.lieParbe}
-                onChange={(value) => handleInputChange('lieParbe', value)}
+                onChange={(e) => handleInputChange('lieParbe', e.target.value)}
                 placeholder="Lieu du sinistre"
                 maxLength={50}
               />
@@ -608,7 +611,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Numéro d'Ordre"
                 value={formData.numOrdre}
-                onChange={(value) => handleInputChange('numOrdre', value)}
+                onChange={(e) => handleInputChange('numOrdre', e.target.value)}
                 placeholder="Numéro d'ordre"
                 maxLength={10}
               />
@@ -616,7 +619,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Code Spécialité Maladie"
                 value={formData.codeSpeMa}
-                onChange={(value) => handleInputChange('codeSpeMa', value)}
+                onChange={(e) => handleInputChange('codeSpeMa', e.target.value)}
                 placeholder="Code spécialité"
                 maxLength={10}
               />
@@ -624,7 +627,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Code Clinique"
                 value={formData.codeClin}
-                onChange={(value) => handleInputChange('codeClin', value)}
+                onChange={(e) => handleInputChange('codeClin', e.target.value)}
                 placeholder="Code établissement"
                 maxLength={10}
               />
@@ -632,7 +635,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Code Médecin"
                 value={formData.codeMede}
-                onChange={(value) => handleInputChange('codeMede', value)}
+                onChange={(e) => handleInputChange('codeMede', e.target.value)}
                 placeholder="Code praticien"
                 maxLength={10}
               />
@@ -640,7 +643,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Date d'Ouverture"
                 value={formData.dateOuve}
-                onChange={(value) => handleInputChange('dateOuve', value)}
+                onChange={(e) => handleInputChange('dateOuve', e.target.value)}
                 error={validationErrors.dateOuve}
                 type="date"
               />
@@ -648,7 +651,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Montant Avance Sinistre (DH)"
                 value={formData.monAvaSi}
-                onChange={(value) => handleInputChange('monAvaSi', value)}
+                onChange={(e) => handleInputChange('monAvaSi', e.target.value)}
                 error={validationErrors.monAvaSi}
                 type="number"
                 placeholder="Montant d'avance"
@@ -657,7 +660,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <InputField
                 label="Dossier Transfert"
                 value={formData.dossTran}
-                onChange={(value) => handleInputChange('dossTran', value)}
+                onChange={(e) => handleInputChange('dossTran', e.target.value)}
                 placeholder="Référence transfert"
                 maxLength={50}
               />
@@ -665,7 +668,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <SelectField
                 label="Fausse Déclaration"
                 value={formData.fausDecl}
-                onChange={(value) => handleInputChange('fausDecl', value)}
+                onChange={(e) => handleInputChange('fausDecl', e.target.value)}
                 options={[
                   { value: 'false', label: 'Non' },
                   { value: 'true', label: 'Oui' }
@@ -675,7 +678,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
               <SelectField
                 label="Sinistre Archivé"
                 value={formData.siniArch}
-                onChange={(value) => handleInputChange('siniArch', value)}
+                onChange={(e) => handleInputChange('siniArch', e.target.value)}
                 options={[
                   { value: 'false', label: 'Non' },
                   { value: 'true', label: 'Oui' }
@@ -686,14 +689,13 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
             <TextAreaField
               label="Observations"
               value={formData.obbseSini}
-              onChange={(value) => handleInputChange('obbseSini', value)}
+              onChange={(e) => handleInputChange('obbseSini', e.target.value)}
               placeholder="Commentaires ou observations sur le sinistre..."
               rows={4}
             />
           </ExpandableCard>
         </div>
 
-        {/* Section d'importation PDF avec drag & drop */}
         <div className="file-upload-section">
           <div className="file-upload-header">
             <FileText className="file-upload-icon" />

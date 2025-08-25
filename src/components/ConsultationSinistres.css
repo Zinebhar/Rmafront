@@ -17,26 +17,26 @@
   --border-radius-lg: 12px;
   --light-gray: #e5e7eb;
   --light-gray-border: #d1d5db;
-  --navbar-height: 80px; /* Hauteur correcte de la navbar (5rem = 80px) */
+  --navbar-height: 80px; 
 }
 
-/* ✅ CONTENEUR PRINCIPAL */
+
 .consultation-container {
   background-color: var(--background-gray);
   min-height: calc(100vh - var(--navbar-height));
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   
-  /* Positionnement et largeur corrigés */
-  margin-left: 250px; /* sidebar ouverte */
+  
+  margin-left: 250px; 
   width: calc(100% - 250px);
   padding: 24px;
-  padding-top: calc(var(--navbar-height) + 24px); /* Espace pour navbar fixe */
+  padding-top: calc(var(--navbar-height) + 24px); 
   box-sizing: border-box;
   transition: all 0.3s ease;
 }
 
 .consultation-container.sidebar-collapsed {
-  margin-left: 64px; /* sidebar repliée */
+  margin-left: 64px; 
   width: calc(100% - 64px);
 }
 
@@ -46,7 +46,7 @@
   cursor: not-allowed;
 }
 
-/* ✅ HEADER SECTION */
+
 .page-header {
   margin-bottom: 24px;
 }
@@ -105,7 +105,7 @@
   font-weight: 500;
 }
 
-/* ✅ ONGLETS */
+
 .tabs-container {
   margin-bottom: 24px;
 }
@@ -159,27 +159,27 @@
   height: 16px;
 }
 
-/* ✅ CONTENEUR FORMULAIRE - PADDING OPTIMISÉ */
+
 .form-container {
   background: var(--white);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
-  padding: 24px; /* ✅ Optimisé pour éviter le débordement */
+  padding: 24px; 
   margin-bottom: 24px;
   width: 100%;
   box-sizing: border-box;
   margin-left: 0;
   margin-right: 0;
-  overflow: hidden; /* Empêche le débordement */
-  position: relative; /* Position de référence */
+  overflow: hidden; 
+  position: relative; 
 }
 
-/* ✅ ALERTES */
+
 .alert {
-  padding: 14px 18px; /* ✅ Valeur optimisée */
+  padding: 14px 18px; 
   border-radius: var(--border-radius);
-  margin-bottom: 20px; /* ✅ Espacé optimisé */
+  margin-bottom: 20px; 
   font-size: 14px;
   border: 1px solid;
   display: flex;
@@ -205,23 +205,22 @@
   flex-shrink: 0;
 }
 
-/* ✅ TITRE AVEC ESPACEMENT OPTIMISÉ */
+
 .form-title {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 20px 0; /* ✅ Optimisé */
+  margin: 0 0 20px 0; 
 }
 
-/* ✅ CONTENU FORMULAIRE */
 .form-content {
-  margin-bottom: 24px; /* ✅ Espacement optimisé */
+  margin-bottom: 24px; 
   padding: 0;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* ✅ GRILLE FORMULAIRE */
+
 .form-grid {
   display: grid;
   width: 100%;
@@ -230,13 +229,13 @@
   padding: 0;
   align-items: start;
   box-sizing: border-box;
-  max-width: 100%; /* Empêche le débordement */
+  max-width: 100%; 
 }
 
 .form-grid-2 {
   grid-template-columns: 1fr 1fr !important;
   gap: 20px !important;
-  max-width: 100% !important; /* Empêche le débordement */
+  max-width: 100% !important; 
 }
 
 .form-grid-3 {
@@ -259,7 +258,7 @@
   gap: 24px !important; 
 }
 
-/* ✅ GROUPES DE CHAMPS */
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -268,7 +267,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  max-width: 100%; /* Empêche le débordement */
+  max-width: 100%; 
 }
 
 .form-label {
@@ -286,7 +285,7 @@
   color: var(--error-red);
 }
 
-/* ✅ CHAMPS DE SAISIE */
+
 .form-input {
   padding: 12px 16px;
   border: 1px solid var(--light-gray-border) !important;
@@ -310,7 +309,7 @@
   color: var(--light-gray) !important;
 }
 
-/* ✅ SELECTEURS AMÉLIORÉS - BOUTON SELECT SIMPLE */
+
 .select-wrapper {
   position: relative;
   width: 100%;
@@ -342,13 +341,13 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* ✅ DROPDOWN ULTRA-MODERNE - LISTE TRÈS STYLÉE */
+
 .form-select option {
   color: #1e293b !important;
   background: #ffffff !important;
-  padding: 16px 24px !important; /* ✅ Padding très généreux */
+  padding: 16px 24px !important; 
   font-weight: 500 !important;
-  font-size: 15px !important; /* ✅ Texte plus grand */
+  font-size: 15px !important; 
   border: none !important;
   margin: 0 !important;
   line-height: 1.6 !important;
@@ -357,7 +356,7 @@
   cursor: pointer !important;
 }
 
-/* ✅ PREMIÈRE OPTION (PLACEHOLDER) - STYLE SPÉCIAL */
+
 .form-select option:first-child {
   color: #94a3b8 !important;
   font-style: italic !important;
@@ -368,7 +367,7 @@
   font-size: 14px !important;
 }
 
-/* ✅ OPTIONS NORMALES - STYLE PREMIUM */
+
 .form-select option:not(:first-child) {
   background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%) !important;
   border-left: 4px solid transparent !important;
@@ -376,7 +375,7 @@
   position: relative !important;
 }
 
-/* ✅ EFFET AVANT POUR CHAQUE OPTION */
+
 .form-select option:not(:first-child)::before {
   content: '▶' !important;
   position: absolute !important;
@@ -386,32 +385,32 @@
   transition: all 0.3s ease !important;
 }
 
-/* ✅ HOVER SUR LES OPTIONS - EFFET SPECTACULAIRE */
+
 .form-select option:not(:first-child):hover {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 20%, #a855f7 100%) !important;
   color: #ffffff !important;
-  border-left: 4px solid #fbbf24 !important; /* ✅ Bordure orange */
-  padding-left: 32px !important; /* ✅ Décalage au hover */
+  border-left: 4px solid #fbbf24 !important; 
+  padding-left: 32px !important; 
   font-weight: 600 !important;
-  transform: translateX(8px) scale(1.02) !important; /* ✅ Mouvement + scale */
+  transform: translateX(8px) scale(1.02) !important; 
   box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.4), 0 4px 6px -2px rgba(99, 102, 241, 0.2) !important;
   letter-spacing: 0.5px !important;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 .form-select option:not(:first-child):hover::before {
-  color: #fbbf24 !important; /* ✅ Flèche orange visible */
+  color: #fbbf24 !important; 
   transform: translateX(4px) !important;
 }
 
-/* ✅ SÉLECTION ACTIVE - STYLE DISTINCTIF */
+
 .form-select option:not(:first-child):checked,
 .form-select option:not(:first-child):focus,
 .form-select option:not(:first-child)[selected] {
   background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #6366f1 100%) !important;
   color: #ffffff !important;
   font-weight: 700 !important;
-  border-left: 4px solid #f59e0b !important; /* ✅ Bordure orange pour sélection */
+  border-left: 4px solid #f59e0b !important; 
   padding-left: 28px !important;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 25px -5px rgba(30, 64, 175, 0.4) !important;
   text-transform: uppercase !important;
@@ -421,13 +420,13 @@
 
 .form-select option:not(:first-child):checked::before,
 .form-select option:not(:first-child)[selected]::before {
-  content: '✓' !important; /* ✅ Checkmark pour sélection */
+  content: '✓' !important; 
   color: #f59e0b !important;
   font-weight: bold !important;
   font-size: 14px !important;
 }
 
-/* ✅ ANIMATIONS POUR CHAQUE OPTION */
+
 .form-select option:nth-child(2) { 
   animation-delay: 0.05s !important; 
   transition-delay: 0.05s !important;
@@ -445,7 +444,6 @@
   transition-delay: 0.2s !important;
 }
 
-/* ✅ ANIMATION D'APPARITION */
 @keyframes slideInOption {
   from {
     opacity: 0;
@@ -461,7 +459,7 @@
   animation: slideInOption 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
 }
 
-/* ✅ ICÔNE SELECT SIMPLE */
+
 .select-icon {
   position: absolute;
   right: 12px;
@@ -489,7 +487,7 @@
   grid-column: span 2; 
 }
 
-/* ✅ SECTION BOUTONS D'ACTION FORMULAIRE */
+
 .form-actions {
   display: flex !important;
   flex-direction: row !important;
@@ -532,7 +530,7 @@
   border-top: 1px solid #f3f4f6;
 }
 
-/* ✅ NOUVELLE SECTION : BOUTONS D'ACTION DANS LE TABLEAU */
+
 .action-buttons {
   display: flex !important;
   align-items: center !important;
@@ -568,7 +566,7 @@
   min-height: 30px !important;
 }
 
-/* Bouton Détails - Style bleu outline */
+
 .action-buttons .btn-outline {
   background: #ffffff !important;
   border-color: #3b82f6 !important;
@@ -583,7 +581,7 @@
   box-shadow: 0 3px 6px rgba(59, 130, 246, 0.2) !important;
 }
 
-/* Styles pour les boutons de documents colorés */
+
 .action-buttons .bg-red-600 {
   background: #dc2626 !important;
   border-color: #dc2626 !important;
@@ -663,7 +661,7 @@
   flex-shrink: 0 !important;
 }
 
-/* ✅ BOUTONS GÉNÉRAUX OPTIMISÉS */
+
 .btn {
   display: flex;
   align-items: center;
@@ -773,7 +771,7 @@
   min-width: 0 !important;
 }
 
-/* ✅ ANIMATIONS */
+
 .animate-spin {
   animation: spin 1s linear infinite;
 }
@@ -787,7 +785,7 @@
   }
 }
 
-/* ✅ SECTION RÉSULTATS AMÉLIORÉE */
+
 .results-container {
   background: var(--white);
   border-radius: var(--border-radius-lg);
@@ -890,7 +888,6 @@
   text-overflow: ellipsis;
 }
 
-/* ✅ BADGES DE STATUT AMÉLIORÉS */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -933,7 +930,7 @@
   border: 1px solid #6b7280;
 }
 
-/* ✅ PAGINATION */
+
 .pagination-container {
   display: flex;
   justify-content: space-between;
@@ -1004,7 +1001,7 @@
   font-size: 14px;
 }
 
-/* ✅ ÉTATS VIDES ET DE CHARGEMENT */
+
 .empty-state,
 .loading-state {
   background: var(--white);
@@ -1116,7 +1113,7 @@
   }
 }
 
-/* ✅ SECTION D'AIDE */
+
 .help-section {
   background: var(--white);
   border-radius: var(--border-radius-lg);
@@ -1170,9 +1167,7 @@
   line-height: 1.4;
 }
 
-/* ✅ MEDIA QUERIES RESPONSIVE OPTIMISÉES */
 
-/* Tablettes */
 @media (max-width: 1024px) {
   .consultation-container {
     margin-left: 250px;
@@ -1224,7 +1219,7 @@
   }
 }
 
-/* Tablettes petites */
+
 @media (max-width: 800px) {
   .consultation-container {
     margin-left: 250px;
@@ -1268,7 +1263,7 @@
   }
 }
 
-/* Mobiles */
+
 @media (max-width: 640px) {
   .consultation-container {
     margin-left: 0; 
@@ -1406,7 +1401,7 @@
   }
 }
 
-/* Très petits mobiles */
+
 @media (max-width: 480px) {
   .consultation-container {
     padding-top: calc(var(--navbar-height) + 12px);

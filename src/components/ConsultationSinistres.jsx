@@ -28,19 +28,19 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
   "11": { label: "Lettre d'accord", icon: CheckCircle, color: "bg-blue-600", type: "ACCORD" }};
 
   
-  // État utilisateur pour affichage des informations
+ 
   const [userInfo, setUserInfo] = useState(null);
   const [etatsSinistre, setEtatsSinistre] = useState([]);
   const [loadingEtats, setLoadingEtats] = useState(true);
   
   useEffect(() => {
-    // ✅ Plus besoin de hardcoder le token ici, il est centralisé
+   
     const currentToken = getAuthToken();
     if (currentToken) {
-      // Utilisation de la configuration centralisée
+     
       SinistreService.setToken(currentToken);
       
-      // Extraction des informations utilisateur depuis le token
+     
       const userData = getUserInfoFromToken(currentToken);
       if (userData) {
         setUserInfo(userData);
@@ -53,7 +53,7 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
     }
   }, []); 
 
-  // Chargement des états de sinistre
+  
   useEffect(() => {
     const loadEtatsSinistre = async () => {
       try {
@@ -63,7 +63,7 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
         console.log('✅ États de sinistre chargés:', response.data);
       } catch (error) {
         console.error('Erreur chargement états:', error);
-        // Les états de fallback sont déjà gérés dans le service
+        
       } finally {
         setLoadingEtats(false);
       }
@@ -92,14 +92,14 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
 
   const navigate = useNavigate();
 
-  // ✅ Fonction utilitaire pour gérer les erreurs de manière centralisée
+ 
   const handleApiError = (error, operation = 'opération') => {
     console.error(`❌ Erreur lors de ${operation}:`, error);
     
-    // Si erreur 401, le token a peut-être expiré
+    
     if (error.response?.status === 401) {
       setError('Session expirée. Veuillez vous reconnecter.');
-      // Ici vous pourriez déclencher une redirection vers la page de login
+      
       return;
     }
     
@@ -107,14 +107,14 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
     setError(errorMsg);
   };
 
-  // ✅ Fonction pour valider les entrées utilisateur
+  
   const validateSearchInput = (input, fieldName) => {
     if (!input || typeof input !== 'string') return false;
     
     const trimmedInput = input.trim();
     if (trimmedInput.length === 0) return false;
     
-    // Validation basique pour éviter les caractères dangereux
+    
     const dangerousChars = /[<>";&\\]/;
     if (dangerousChars.test(trimmedInput)) {
       setError(`Caractères non autorisés dans ${fieldName}`);
@@ -226,7 +226,7 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
       const response = await SinistreService.rechercherParNatureMaladie(
         searchParams.natureMaladie.trim(),
         searchParams.typeRecherche,
-        50 // Limite de résultats
+        50 
       );
       
       const resultData = response.data || [];
@@ -286,7 +286,7 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
   const rechercherCombine = async () => {
     const { numSinistre, nom, prenom, natureMaladie, etatSinistre } = searchParams;
     
-    // Validation : au moins un critère doit être valide
+    
     const hasValidCriteria = [
       numSinistre.trim(),
       nom.trim(),
@@ -300,7 +300,7 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
       return;
     }
 
-    // Validation des caractères pour chaque champ renseigné
+    
     const fieldsToValidate = [
       { value: numSinistre, name: 'le numéro de sinistre' },
       { value: nom, name: 'le nom' },
@@ -311,7 +311,7 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
 
     for (const field of fieldsToValidate) {
       if (field.value.trim() && !validateSearchInput(field.value, field.name)) {
-        return; // L'erreur est déjà définie dans validateSearchInput
+        return; 
       }
     }
 
@@ -333,7 +333,7 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
       const response = await SinistreService.rechercherCombine(
         searchCriteria,
         searchParams.typeRecherche,
-        50 // Limite de résultats
+        50 
       );
       
       const resultData = response.data || [];
@@ -357,7 +357,7 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
     setError('');
     setSuccessMessage('');
     
-    // Vérifier que l'utilisateur est toujours authentifié
+    
     const currentToken = getAuthToken();
     if (!currentToken) {
       setError('Session expirée. Veuillez vous reconnecter.');
@@ -448,7 +448,7 @@ const ConsultationSinistres = ({ sidebarCollapsed = false }) => {
   };
  
 
-  // REMPLACEZ votre fonction handleGenerateDocument par celle-ci :
+ 
 
 const handleGenerateDocument = async (sinistre) => {
   if (!sinistre || !sinistre.etatSinistre) {
@@ -458,7 +458,7 @@ const handleGenerateDocument = async (sinistre) => {
 
   const config = DOCUMENT_BUTTONS[sinistre.etatSinistre];
   if (!config) {
-    // Message amélioré avec l'état actuel
+    
     const etatActuel = sinistre.etatSinistreLibelle || `État ${sinistre.etatSinistre}`;
     setError(`❌ Aucun document disponible pour l'état "${etatActuel}".
     
@@ -486,7 +486,7 @@ const handleGenerateDocument = async (sinistre) => {
   } catch (error) {
     console.error("Erreur lors de la génération du document :", error);
     
-    // Utilisation du message d'erreur du backend (qui est déjà très détaillé)
+    
     setError(error.message);
   } finally {
     setLoading(false);
@@ -497,7 +497,7 @@ const getStatusClass = (etatLibelle, etatId) => {
   
   const libelle = etatLibelle?.toUpperCase() || '';
   
-  // États basés sur le libellé
+  
   if (libelle.includes('OUVERT')) return 'status-open';
   if (libelle.includes('RÉGLÉ') || libelle.includes('REGLE')) return 'status-closed';
   if (libelle.includes('REJETÉ') || libelle.includes('REJETE')) return 'status-closed';
@@ -508,7 +508,7 @@ const getStatusClass = (etatLibelle, etatId) => {
   if (libelle.includes('ATTENTE') || libelle.includes('COMPLÉMENT') || libelle.includes('COMPLEMENT')) return 'status-pending';
   if (libelle.includes('PARTIEL')) return 'status-partial';
   
-  // États basés sur l'ID (fallback)
+  
   if (etatId) {
     switch(etatId.toString()) {
       case '1': return 'status-open';
@@ -530,13 +530,13 @@ const getStatusClass = (etatLibelle, etatId) => {
   
   return 'status-default';
 };
-  // ✅ Fonction pour nettoyer les messages d'erreur/succès après un délai
+  
   useEffect(() => {
     if (error || successMessage) {
       const timer = setTimeout(() => {
         setError('');
         setSuccessMessage('');
-      }, 5000); // Effacer après 5 secondes
+      }, 5000); 
       
       return () => clearTimeout(timer);
     }
@@ -626,7 +626,6 @@ const getStatusClass = (etatLibelle, etatId) => {
           <select
             value={searchParams.etatSinistre}
             onChange={(e) => {
-              // Convertir l'affichage avec accent en valeur sans accent
               const value = e.target.value === "En attente de complement d'information" 
                 ? "En attente de complement d'information" 
                 : e.target.value;
@@ -638,7 +637,6 @@ const getStatusClass = (etatLibelle, etatId) => {
             <option value="">-- Sélectionner un état --</option>
             {etatsSinistre.map(etat => (
               <option key={etat.code} value={etat.libelle}>
-                {/* Afficher avec accent mais stocker sans accent */}
                 {etat.libelle.replace('complement', 'complement')}
               </option>
             ))}
@@ -721,7 +719,7 @@ const getStatusClass = (etatLibelle, etatId) => {
                 </div>
               </div>
               <div className="form-group">
-                {/* Cellule vide pour l'alignement */}
+                
               </div>
             </div>
             <div className="form-info">
@@ -880,7 +878,7 @@ const getStatusClass = (etatLibelle, etatId) => {
 
   return (
     <div className={`consultation-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      {/* Header avec informations utilisateur */}
+     
       <div className="page-header">
         <div className="page-header-main">
           <h1 className="page-title">Consultation des Sinistres</h1>
@@ -1088,20 +1086,20 @@ const getStatusClass = (etatLibelle, etatId) => {
                   Précédent
                 </button>
                 
-                {/* Génération intelligente des numéros de page */}
+               
                 {(() => {
                   const maxVisiblePages = 5;
                   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
                   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
                   
-                  // Ajuster startPage si on est proche de la fin
+                  
                   if (endPage - startPage + 1 < maxVisiblePages) {
                     startPage = Math.max(1, endPage - maxVisiblePages + 1);
                   }
                   
                   const pages = [];
                   
-                  // Page 1 si elle n'est pas dans la plage visible
+                  
                   if (startPage > 1) {
                     pages.push(
                       <button
@@ -1123,7 +1121,7 @@ const getStatusClass = (etatLibelle, etatId) => {
                     }
                   }
                   
-                  // Pages visibles
+                 
                   for (let i = startPage; i <= endPage; i++) {
                     pages.push(
                       <button
@@ -1138,7 +1136,7 @@ const getStatusClass = (etatLibelle, etatId) => {
                     );
                   }
                   
-                  // Page finale si elle n'est pas dans la plage visible
+                 
                   if (endPage < totalPages) {
                     if (endPage < totalPages - 1) {
                       pages.push(
@@ -1228,7 +1226,7 @@ const getStatusClass = (etatLibelle, etatId) => {
         </div>
       )}
 
-      {/* Message d'aide contextuel */}
+    
       {!loading && results.length === 0 && !error && (
         <div className="help-section">
           <div className="help-content">

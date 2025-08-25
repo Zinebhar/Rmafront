@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
-// Import des composants
 import Accueil from './components/Accueil';
 import DashboardRMA from './components/DashboardRMA';
 import RMANavbar from './components/RMANavbar.jsx';
@@ -19,7 +18,6 @@ function AppContent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const location = useLocation();
 
-  // 🧠 Afficher la sidebar uniquement pour ces routes
   const showSidebar =
     location.pathname.startsWith('/sante') ||
     location.pathname.startsWith('/DashboardRMA') ||
@@ -53,13 +51,11 @@ function AppContent() {
             <Route path="/" element={<Accueil />} />
             <Route path="/sante" element={<DashboardRMA sidebarCollapsed={isSidebarCollapsed} />} />
 
-            {/* Sinistres */}
             <Route path="/consultation/sinistres" element={<ConsultationSinistres sidebarCollapsed={isSidebarCollapsed} />} />
             <Route path="/consultation/sinistres/creer" element={<CreerSinistre sidebarCollapsed={isSidebarCollapsed} />} />
             <Route path="/consultation/sinistres/:numSinistre/details" element={<DetailsSinistre sidebarCollapsed={isSidebarCollapsed} />} />
             <Route path="/consultation/sinistres/:numSinistre/modifier" element={<ModifierSinistre sidebarCollapsed={isSidebarCollapsed} />} />
 
-            {/* Lots */}
             <Route path="/lots" element={<ConsultationLots sidebarCollapsed={isSidebarCollapsed} />} />
             <Route path="/lots/creation" element={<CreationLot sidebarCollapsed={isSidebarCollapsed} />} />
             <Route path="/lots/details/:id" element={<DetailsLot sidebarCollapsed={isSidebarCollapsed} />} />

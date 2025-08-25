@@ -1,4 +1,3 @@
-/* DashboardRMA.css - Design Révolutionnaire Compact */
 
 .dashboard-container {
   padding: 0;
@@ -8,7 +7,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Ajustement pour éviter la superposition avec la navbar */
+
 .dashboard-container.open {
   margin-left: 250px;
   margin-top: 4rem;
@@ -21,7 +20,7 @@
   padding-top: 1.5rem;
 }
 
-/* Header minimaliste et moderne */
+
 .dashboard-header {
   padding: 1.5rem 1.25rem 1rem;
   background: #ffffff;
@@ -31,7 +30,7 @@
   position: relative;
 }
 
-/* Ligne décorative horizontale */
+
 .dashboard-header::after {
   content: '';
   position: absolute;
@@ -52,7 +51,7 @@
   gap: 0.75rem;
 }
 
-/* Icône décorative avant le titre */
+
 .main-title::before {
   content: '📊';
   font-size: 1.25rem;
@@ -66,7 +65,7 @@
   margin-left: 2rem;
 }
 
-/* Sections ultra-compactes */
+
 .section {
   margin-bottom: 2rem;
   padding: 0 1.25rem;
@@ -89,7 +88,7 @@
   gap: 0.5rem;
 }
 
-/* Puces modernes pour les titres */
+
 .section-title::before {
   content: '';
   width: 8px;
@@ -99,7 +98,7 @@
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
 }
 
-/* Grid très compact */
+
 .dashboard-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -107,7 +106,7 @@
   margin-bottom: 0;
 }
 
-/* Cartes style moderne flat design */
+
 .card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -118,7 +117,7 @@
   overflow: hidden;
 }
 
-/* Pattern de points subtil */
+
 .card::before {
   content: '';
   position: absolute;
@@ -137,7 +136,7 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-/* Layout horizontal compact pour stats */
+
 .stats-card {
   padding: 1rem;
   display: flex;
@@ -145,7 +144,7 @@
   gap: 1rem;
 }
 
-/* Icônes carrées modernes */
+
 .card-icon {
   width: 36px;
   height: 36px;
@@ -159,7 +158,7 @@
   position: relative;
 }
 
-/* Effet géométrique sur l'icône */
+
 .card-icon::after {
   content: '';
   position: absolute;
@@ -221,7 +220,7 @@
   color: #6b7280;
 }
 
-/* Cartes financières - style différent */
+
 .financial-card {
   padding: 1rem;
   display: flex;
@@ -238,7 +237,7 @@
   border-left-color: #234585;
 }
 
-/* Graphique style moderne flat */
+
 .chart-container {
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -247,7 +246,7 @@
   position: relative;
 }
 
-/* Coins coupés pour le graphique */
+
 .chart-container::after {
   content: '';
   position: absolute;
@@ -286,7 +285,7 @@
   margin: 0;
 }
 
-/* Tableau style moderne et compact */
+
 .table-container {
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -294,7 +293,7 @@
   position: relative;
 }
 
-/* Onglet décoratif pour le tableau */
+
 .table-container::before {
   content: 'ACTIVITÉS';
   position: absolute;
@@ -348,14 +347,14 @@
   border-bottom: none;
 }
 
-/* Éléments du tableau redessinés */
+
 .user-cell {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-/* Avatar hexagonal */
+
 .user-avatar {
   width: 24px;
   height: 24px;
@@ -383,7 +382,7 @@
   font-family: 'Courier New', monospace;
 }
 
-/* Badge style tag */
+
 .badge {
   background: #f59e0b;
   color: white;
@@ -396,7 +395,7 @@
   display: inline-block;
 }
 
-/* Effet tag avec coin coupé */
+
 .badge::after {
   content: '';
   position: absolute;
@@ -421,7 +420,7 @@
   border-radius: 50%;
 }
 
-/* Responsive ultra-compact */
+
 @media (max-width: 1024px) {
   .dashboard-cards {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -481,7 +480,7 @@
   }
 }
 
-/* Animations minimalistes */
+
 @keyframes slideInLeft {
   from {
     opacity: 0;
