@@ -28,7 +28,37 @@
     margin-left: 0;
   }
 }
+/* ✅ Optionnels section aligned in one line */
+.optionnels-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end; /* align bottom of inputs */
+  flex-wrap: wrap; /* allow wrapping if screen is small */
+}
 
+.optionnels-row .input-field{
+  flex: 1 1 0;
+  min-width: 240px;
+}
+.optionnels-row .input-control {
+  flex: 1;
+  min-width: 200px; /* ensures inputs don’t shrink too much */
+}
+
+/* Make the beneficiary select a bit wider than others */
+.optionnels-row .input-field.beneficiaire {
+  flex: 1.4 1 0;                /* increase width share */
+}
+
+/* Ensure the wrapper and the select stretch to full width */
+.optionnels-row .input-field.beneficiaire .benef-select {
+  width: 100%;
+}
+
+.optionnels-row .input-field.beneficiaire select.input-control {
+  width: 100%;
+  display: block;
+}
 @media (max-width: 480px) {
   .create-container {
     padding-top: 80px; /* 56px navbar très petit écran + 24px espacement */

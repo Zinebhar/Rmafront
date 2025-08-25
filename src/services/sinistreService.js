@@ -1,7 +1,7 @@
 // 📁 src/services/sinistreService.js
 import { getAuthToken, setAuthToken, isTokenValid, clearAuthToken } from '../config/auth';
 
-const API_BASE_URL = 'http://localhost:8089/rest/api/v1/consultation/sinistres';
+const API_BASE_URL = 'http://localhost:9999/rest/api/v1/consultation/sinistres';
 
 class SinistreService {
   
@@ -21,7 +21,8 @@ class SinistreService {
     setAuthToken(token); // ✅ Fonction centralisée
     console.log('🔑 Token défini:', token ? 'Oui' : 'Non');
   }
-async getEtatsSinistre() {
+  
+  async getEtatsSinistre() {
   try {
     console.log('📊 Récupération des états de sinistre...');
     
@@ -63,7 +64,72 @@ async getEtatsSinistre() {
       success: true
     };
   }
-}
+}// --- remplace TOUT le bloc existant de getFichierSinistre par ceci ---
+getFichierSinistre = async (numSinistre) => {
+  const validatedNumSinistre = this.validateInput(numSinistre, 'Le numéro de sinistre', 50);
+
+  const token = getAuthToken();
+  if (!token || !isTokenValid(token)) {
+    throw new Error('Authentification requise pour récupérer le fichier');
+  }
+
+  const url = `${API_BASE_URL}/${encodeURIComponent(validatedNumSinistre)}/fichier`;
+
+  // Timeout 20s (AbortController)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/pdf',
+        Authorization: `Bearer ${token}`,
+      },
+      // ⚠️ Laisse commenté si tu n'utilises PAS de cookies HttpOnly côté backend :
+      // credentials: 'include',
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Aucune pièce jointe n’est associée à ce sinistre.");
+    let msg = `Erreur ${res.status}`;
+    try {
+      const j = await res.json();
+      if (j?.message || j?.error) msg = j.message || j.error;
+    } catch (_) {}
+    throw new Error(msg);
+  }
+
+  const blob = await res.blob();
+
+  // Extraction robuste du filename depuis Content-Disposition
+  const dispo = res.headers.get('Content-Disposition') || res.headers.get('content-disposition') || '';
+  let filename = `sinistre_${validatedNumSinistre}.pdf`;
+
+  // Supporte: filename*=UTF-8''..., filename="...", filename=...
+  const mUtf8 = dispo.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+  const mQuoted = dispo.match(/filename\s*=\s*"([^"]+)"/i);
+  const mBare = dispo.match(/filename\s*=\s*([^;]+)/i);
+  if (mUtf8) {
+    try { filename = decodeURIComponent(mUtf8[1]); } catch {}
+  } else if (mQuoted) {
+    filename = mQuoted[1];
+  } else if (mBare) {
+    filename = mBare[1].trim();
+  }
+
+  // Nettoyage minimal (Windows reserved chars)
+  filename = filename.replace(/[<>:"/\\|?*]/g, '_');
+
+  return { blob, filename };
+};
+
+
   /**
    * Récupère un token depuis Keycloak
    * ✅ Mise à jour pour utiliser la configuration centralisée

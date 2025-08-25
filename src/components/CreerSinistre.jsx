@@ -23,8 +23,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import SinistreService from '../services/sinistreService';
 import './CreerSinistre.css';
-
+import BeneficiaireService from '../services/beneficiaireService';
 import { getAuthToken } from '../config/auth';
+
+
 
 const formatDateToDDMMYYYY = (isoDate) => {
   if (!isoDate) return '';
@@ -45,18 +47,19 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
     optionnels: false,
     avances: false
   });
-
+  const [benefList, setBenefList] = useState([]);
+  const [benefLoading, setBenefLoading] = useState(false);
+  const [benefError, setBenefError] = useState('');
+  const [showNewBenef, setShowNewBenef] = useState(false);
   const [formData, setFormData] = useState({
     numPolice: '',
     numAffiliation: '',
     codeDecl: '',
     dateSurv: '',
-    
     dateDecl: '',
     montoFe: '',
     refExtSi: '',
     natuMala: '',
-    
     numFiliale: '',
     numCompl: '',
     lieParbe: '',
@@ -69,13 +72,16 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
     dossTran: '',
     fausDecl: 'false',
     siniArch: 'false',
-    obbseSini: ''
+    obbseSini: '',
+    beneficiaireId: '' 
   });
 
   const [validationErrors, setValidationErrors] = useState({});
 
   // Chargement des types de déclaration
   useEffect(() => {
+    
+    
     const loadTypesDeclaration = async () => {
       try {
         setLoadingTypes(true);
@@ -91,7 +97,47 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
 
     loadTypesDeclaration();
   }, []);
+useEffect(() => {
+  const police = formData.numPolice?.trim();
+  const aff = formData.numAffiliation?.trim();
 
+  setBenefError('');
+  setBenefList([]);
+  // (optionnel) reset la sélection si les clés changent
+  setFormData(prev => ({ ...prev, beneficiaireId: '' }));
+
+  if (!police || !aff) return;
+
+  let aborted = false;
+  (async () => {
+    try {
+      setBenefLoading(true);
+      const list = await BeneficiaireService.search({
+        numeroContrat: police,
+        numeroAffiliation: aff
+      });
+
+      if (aborted) return;
+
+    const mapped = list.map(b => ({
+    id: b.id ?? b.beneficiaireId ?? String(Math.random()),
+    label: [b.nomBeneficiaire, b.prenomBeneficiaire]   // ✅ only use nom & prenom
+            .filter(Boolean).join(' ') || 'Bénéficiaire'
+   }));
+
+setBenefList(mapped);
+
+
+    } catch (e) {
+      if (!aborted) setBenefError('Impossible de charger les bénéficiaires.');
+      console.error(e);
+    } finally {
+      if (!aborted) setBenefLoading(false);
+    }
+  })();
+
+  return () => { aborted = true; };
+}, [formData.numPolice, formData.numAffiliation]);
   const handleBack = () => {
     navigate('/consultation/sinistres');
   };
@@ -116,7 +162,6 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
       }));
     }
   };
-
   const validateForm = () => {
     const errors = {};
     
@@ -143,7 +188,9 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
       errors.dateOuve = 'Format de date invalide (YYYY-MM-DD)';
     }
 
-    if (formData.montoFe && formData.montoFe.trim()) {
+    if (!formData.montoFe.trim()) {
+      errors.montoFe = 'Le montant des frais engagés est obligatoire';
+    } else {
       const montant = parseFloat(formData.montoFe);
       if (isNaN(montant)) {
         errors.montoFe = 'Le montant doit être un nombre valide';
@@ -153,6 +200,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
         errors.montoFe = 'Le montant semble trop élevé (max 1,000,000)';
       }
     }
+
     if (formData.monAvaSi && formData.monAvaSi.trim()) {
       const montant = parseFloat(formData.monAvaSi);
       if (isNaN(montant)) {
@@ -208,7 +256,7 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
 
       // Envoyer la requête
       const response = await fetch(
-        'http://localhost:8089/rest/api/v1/consultation/sinistres/creer-sans-lot',
+        'http://localhost:9999/rest/api/v1/consultation/sinistres/creer-sans-lot',
         {
           method: 'POST',
           headers: {
@@ -271,8 +319,11 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
       dossTran: '',
       fausDecl: 'false',
       siniArch: 'false',
-      obbseSini: ''
+      obbseSini: '',
+     beneficiaireId: ''
     });
+    setBenefList([]);      
+    setShowNewBenef(false);  
     setValidationErrors({});
     setError('');
     setSuccess('');
@@ -526,53 +577,108 @@ const CreerSinistre = ({ sidebarCollapsed = false }) => {
                 required
                 type="date"
               />
-            </div>
-          </ExpandableCard>
-
-          <ExpandableCard 
-            title="Informations Optionnelles" 
-            icon={Info} 
-            sectionKey="optionnels"
-            badgeText="Recommandées"
-          >
-            <div className="input-grid">
-              <InputField
-                label="Date de Déclaration"
-                value={formData.dateDecl}
-                onChange={(value) => handleInputChange('dateDecl', value)}
-                error={validationErrors.dateDecl}
-                type="date"
-                placeholder="Auto si vide"
-              />
-              
               <InputField
                 label="Montant Frais Engagés (DH)"
                 value={formData.montoFe}
                 onChange={(value) => handleInputChange('montoFe', value)}
                 error={validationErrors.montoFe}
+                required
                 type="number"
                 placeholder="Ex: 1500.50"
               />
-              
-              <InputField
-                label="Référence Externe"
-                value={formData.refExtSi}
-                onChange={(value) => handleInputChange('refExtSi', value)}
-                error={validationErrors.refExtSi}
-                placeholder="Référence du sinistre"
-                maxLength={50}
-              />
-              
-              <InputField
-                label="Nature de la Maladie"
-                value={formData.natuMala}
-                onChange={(value) => handleInputChange('natuMala', value)}
-                error={validationErrors.natuMala}
-                placeholder="Description de la pathologie"
-                maxLength={200}
-              />
+
             </div>
           </ExpandableCard>
+
+         <ExpandableCard 
+  title="Informations Optionnelles" 
+  icon={Info} 
+  sectionKey="optionnels"
+  badgeText="Recommandées"
+>
+  <div className="optionnels-row">
+    
+    {/* Bénéficiaire */}
+    <div className="input-field beneficiaire ">
+      <label className="input-label">
+        Choisir bénéficiaire
+        <span className="hint muted"> (chargé à partir du N° Police & N° Affiliation)</span>
+      </label>
+      <div className={`benef-select ${benefLoading ? 'loading' : ''}`}>
+        <select
+  value={formData.beneficiaireId || ''}
+  onChange={(e) => {
+    const val = e.target.value;
+    if (val === '__NEW__') {
+      navigate('/beneficiaires/creer', {
+        state: {
+          numeroContrat: formData.numPolice?.trim() || '',
+          numeroAffiliation: formData.numAffiliation?.trim() || ''
+        }
+      }); // ✅ redirection
+      return;
+    }
+    const found = benefList.find(b => String(b.id) === String(val));
+    handleInputChange('beneficiaireId', val);
+    if (found?.numOrdre) {
+      handleInputChange('numOrdre', found.numOrdre);
+    }
+  }}
+  className="input-control"
+  disabled={!formData.numPolice?.trim() || !formData.numAffiliation?.trim() || benefLoading}
+>
+  <option value="">
+    {benefLoading
+      ? 'Chargement des bénéficiaires...'
+      : (!formData.numPolice?.trim() || !formData.numAffiliation?.trim())
+        ? 'Saisir N° Police et N° Affiliation'
+        : (benefList.length ? '-- Sélectionner --' : 'Aucun bénéficiaire trouvé')}
+  </option>
+
+  {(formData.numPolice?.trim() && formData.numAffiliation?.trim()) && (
+    <option value="__NEW__">Nouveau bénéficiaire ➕</option>
+  )}
+
+  {benefList.map(b => (
+    <option key={b.id} value={b.id}>
+      {b.label}
+    </option>
+  ))}
+</select>
+
+        {benefError && <span className="error-message">{benefError}</span>}
+      </div>
+    </div>
+
+    {/* 3 autres champs */}
+    <InputField
+      label="Date de Déclaration"
+      value={formData.dateDecl}
+      onChange={(value) => handleInputChange('dateDecl', value)}
+      error={validationErrors.dateDecl}
+      type="date"
+      placeholder="Auto si vide"
+    />
+
+    <InputField
+      label="Référence Externe"
+      value={formData.refExtSi}
+      onChange={(value) => handleInputChange('refExtSi', value)}
+      error={validationErrors.refExtSi}
+      placeholder="Référence du sinistre"
+      maxLength={50}
+    />
+
+    <InputField
+      label="Nature de la Maladie"
+      value={formData.natuMala}
+      onChange={(value) => handleInputChange('natuMala', value)}
+      error={validationErrors.natuMala}
+      placeholder="Description de la pathologie"
+      maxLength={200}
+    />
+  </div>
+</ExpandableCard>
 
           <ExpandableCard 
             title="Informations Avancées" 
