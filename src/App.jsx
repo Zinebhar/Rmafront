@@ -13,7 +13,7 @@ import EditLot from './components/EditLot';
 import DetailsSinistre from './components/DetailsSinistre';
 import ModifierSinistre from './components/ModifierSinistre';
 import CreerSinistre from './components/CreerSinistre';
-
+import CreerBeneficiaire from './components/CreerBeneficiaire';
 function AppContent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const location = useLocation();
@@ -27,7 +27,7 @@ function AppContent() {
     location.pathname.startsWith('/e-iard') ||
     location.pathname.startsWith('/consultation') ||
     location.pathname.startsWith('/lots');
-
+    location.pathname.startsWith('/beneficiaires');
   return (
     <div className="min-h-screen bg-gray-50">
       {showSidebar && (
@@ -60,6 +60,9 @@ function AppContent() {
             <Route path="/lots/creation" element={<CreationLot sidebarCollapsed={isSidebarCollapsed} />} />
             <Route path="/lots/details/:id" element={<DetailsLot sidebarCollapsed={isSidebarCollapsed} />} />
             <Route path="/lots/edit/:id" element={<EditLot sidebarCollapsed={isSidebarCollapsed} />} />
+
+             <Route path="/beneficiaires/creer" element={<CreerBeneficiaire sidebarCollapsed={isSidebarCollapsed} />} /> 
+          
           </Routes>
         </div>
       </div>

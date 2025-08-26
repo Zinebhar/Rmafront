@@ -32,7 +32,11 @@ import './DetailsSinistre.css';
 const DetailsSinistre = ({ sidebarCollapsed = false }) => {
   const { numSinistre } = useParams();
   const navigate = useNavigate();
-  
+
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfName, setPdfName] = useState(null);
+  const [pdfError, setPdfError] = useState('');
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sinistreDetails, setSinistreDetails] = useState(null);
@@ -122,10 +126,36 @@ const peutEtreModifie = (etatSinistre, etatSinistreLibelle) => {
       }
     };
 
+
     if (numSinistre) {
       loadSinistreDetails();
     }
   }, [numSinistre]);
+  useEffect(() => {
+  let objectUrl;
+
+  const loadPdf = async () => {
+    setPdfError('');
+    setPdfUrl(null);
+    setPdfName(null);
+
+    if (!numSinistre) return;
+
+    try {
+      const { blob, filename } = await SinistreService.getFichierSinistre(numSinistre);
+      objectUrl = URL.createObjectURL(blob);
+      setPdfUrl(objectUrl);
+      setPdfName(filename || `sinistre_${numSinistre}.pdf`);
+    } catch (e) {
+      console.error('Erreur chargement PDF :', e);
+      setPdfError(SinistreService.handleAPIError(e)); 
+    }
+  };
+
+  loadPdf();
+  return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
+}, [numSinistre]);
+
 
   const handleBack = () => {
     navigate('/consultation/sinistres');
@@ -244,6 +274,7 @@ const peutEtreModifie = (etatSinistre, etatSinistreLibelle) => {
         <Download className="w-4 h-4" />
       </button>
     );
+    
   };
 
   const InfoItem = ({ label, value, important = false }) => (
@@ -413,6 +444,13 @@ const peutEtreModifie = (etatSinistre, etatSinistreLibelle) => {
     <ArrowLeft className="btn-icon" />
     Retour à la consultation
   </button>
+        {pdfUrl && (
+        <a href={pdfUrl} download={pdfName} className="btn btn-outline">
+          <Download className="btn-icon" />
+          Télécharger la pièce jointe
+        </a>
+)}
+
 </div>
       </div>
 
@@ -528,6 +566,30 @@ const peutEtreModifie = (etatSinistre, etatSinistreLibelle) => {
             </pre>
           </details>
         </ExpandableCard>
+        <ExpandableCard title="Pièce jointe (PDF)" icon={FileText} sectionKey="pieceJointe" badgeText={pdfName || sinistreDetails?.fichierNom || undefined}>
+
+  {pdfError && (
+    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-yellow-800">
+      {pdfError}
+    </div>
+  )}
+
+  {!pdfError && !pdfUrl && (
+    <div className="text-gray-500">Recherche de la pièce jointe…</div>
+  )}
+
+  {pdfUrl && (
+    <div className="pdf-viewer" style={{border:'1px solid #e5e7eb', borderRadius:8, overflow:'hidden'}}>
+      <object data={pdfUrl} type="application/pdf" width="100%" height="600px">
+        <div className="p-4">
+          Votre navigateur ne peut pas afficher le PDF.
+          <a className="ml-2 text-blue-600 underline" href={pdfUrl} download={pdfName}>Télécharger {pdfName}</a>
+        </div>
+      </object>
+    </div>
+  )}
+</ExpandableCard>
+
       </div>
     </div>
   );

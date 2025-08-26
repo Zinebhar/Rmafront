@@ -3,8 +3,10 @@ import { getAuthToken, isTokenValid, clearAuthToken } from '../config/auth';
 
 
 const api = axios.create({
+
   baseURL: 'http://localhost:8089/rest/api/lots',
   timeout: 1000000, 
+
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'

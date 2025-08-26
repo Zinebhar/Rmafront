@@ -15,56 +15,115 @@ class SinistreService {
     setAuthToken(token); 
     console.log('🔑 Token défini:', token ? 'Oui' : 'Non');
   }
-async getEtatsSinistre() {
-  try {
-    console.log('📊 Récupération des états de sinistre...');
-    
-    const url = `${API_BASE_URL}/etats-sinistre`;
-    const response = await this.apiCall(url);
-    
-    console.log('✅ États de sinistre récupérés:', response.data);
-    
-    return response;
-  } catch (error) {
-    console.error('❌ Erreur récupération états de sinistre:', error);
-    
-    
-    console.log('🔄 Utilisation des états de fallback complets');
-    return {
-      data: [
-        { code: '1', libelle: 'Ouvert' },
-        { code: '2', libelle: 'En cours de chiffrage' },
-        { code: '3', libelle: 'Rejeté' },
-        { code: '4', libelle: 'Réglé' },
-        { code: '5', libelle: 'Sans suite' },
-        { code: '6', libelle: 'En attente de complément d\'information' },
-        { code: '7', libelle: 'En attente de contrôle médical' },
-        { code: '8', libelle: 'En attente de contre visite' },
-        { code: '9', libelle: 'En attente d\'établissement de décompte' },
-        { code: '10', libelle: 'Établissement de décompte en cours' },
-        { code: '11', libelle: 'En attente facture définitive' },
-        { code: '12', libelle: 'En attente de complément d\'information interne' },
-        { code: '13', libelle: 'En attente de contrôle médical systématique' },
-        { code: '14', libelle: 'Annulé' },
-        { code: '15', libelle: 'Accord réglé partiellement' },
-        { code: '16', libelle: 'Règlement annulé' },
-        { code: '17', libelle: 'En attente MAJ RIB Adhérent' },
-        { code: '18', libelle: 'En attente MAJ RIB Société' },
-        { code: '19', libelle: 'En attente MAJ Carte' },
-        { code: '20', libelle: 'Migré (à réouvrir)' }
-      ],
-      message: 'États de sinistre (mode hors ligne)',
-      success: true
-    };
+  
+  async getEtatsSinistre() {
+    try {
+      console.log('📊 Récupération des états de sinistre...');
+      
+      const url = `${API_BASE_URL}/etats-sinistre`;
+      const response = await this.apiCall(url);
+      
+      console.log('✅ États de sinistre récupérés:', response.data);
+      
+      return response;
+    } catch (error) {
+      console.error('❌ Erreur récupération états de sinistre:', error);
+      
+      console.log('🔄 Utilisation des états de fallback complets');
+      return {
+        data: [
+          { code: '1', libelle: 'Ouvert' },
+          { code: '2', libelle: 'En cours de chiffrage' },
+          { code: '3', libelle: 'Rejeté' },
+          { code: '4', libelle: 'Réglé' },
+          { code: '5', libelle: 'Sans suite' },
+          { code: '6', libelle: 'En attente de complément d\'information' },
+          { code: '7', libelle: 'En attente de contrôle médical' },
+          { code: '8', libelle: 'En attente de contre visite' },
+          { code: '9', libelle: 'En attente d\'établissement de décompte' },
+          { code: '10', libelle: 'Établissement de décompte en cours' },
+          { code: '11', libelle: 'En attente facture définitive' },
+          { code: '12', libelle: 'En attente de complément d\'information interne' },
+          { code: '13', libelle: 'En attente de contrôle médical systématique' },
+          { code: '14', libelle: 'Annulé' },
+          { code: '15', libelle: 'Accord réglé partiellement' },
+          { code: '16', libelle: 'Règlement annulé' },
+          { code: '17', libelle: 'En attente MAJ RIB Adhérent' },
+          { code: '18', libelle: 'En attente MAJ RIB Société' },
+          { code: '19', libelle: 'En attente MAJ Carte' },
+          { code: '20', libelle: 'Migré (à réouvrir)' }
+        ],
+        message: 'États de sinistre (mode hors ligne)',
+        success: true
+      };
+    }
   }
-}
-  //Récupère un token depuis Keycloak
-   
+
+  
+  async getFichierSinistre(numSinistre) {
+    const validatedNumSinistre = this.validateInput(numSinistre, 'Le numéro de sinistre', 50);
+
+    const token = getAuthToken();
+    if (!token || !isTokenValid(token)) {
+      throw new Error('Authentification requise pour récupérer le fichier');
+    }
+
+    const url = `${API_BASE_URL}/${encodeURIComponent(validatedNumSinistre)}/fichier`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+    let res;
+    try {
+      res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/pdf',
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    if (!res.ok) {
+      if (res.status === 404) throw new Error("Aucune pièce jointe n'est associée à ce sinistre.");
+      let msg = `Erreur ${res.status}`;
+      try {
+        const j = await res.json();
+        if (j?.message || j?.error) msg = j.message || j.error;
+      // eslint-disable-next-line no-unused-vars
+      } catch (_) { /* empty */ }
+      throw new Error(msg);
+    }
+
+    const blob = await res.blob();
+
+    const dispo = res.headers.get('Content-Disposition') || res.headers.get('content-disposition') || '';
+    let filename = `sinistre_${validatedNumSinistre}.pdf`;
+    const mUtf8 = dispo.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+    const mQuoted = dispo.match(/filename\s*=\s*"([^"]+)"/i);
+    const mBare = dispo.match(/filename\s*=\s*([^;]+)/i);
+    if (mUtf8) {
+      try { filename = decodeURIComponent(mUtf8[1]); } catch { /* empty */ }
+    } else if (mQuoted) {
+      filename = mQuoted[1];
+    } else if (mBare) {
+      filename = mBare[1].trim();
+    }
+
+    filename = filename.replace(/[<>:"/\\|?*]/g, '_');
+
+    return { blob, filename };
+  }
+
+ 
   async getTokenFromKeycloak(username, password) {
     try {
       const tokenUrl = 'https://access-dy.rmaassurance.com/auth/realms/rma-ad/protocol/openid-connect/token';
       
-      // Validation des paramètres
       if (!username || !password) {
         throw new Error('Nom d\'utilisateur et mot de passe requis');
       }
@@ -88,12 +147,10 @@ async getEtatsSinistre() {
       if (response.ok) {
         const data = await response.json();
         
-        //  Validation du token reçu
         if (!data.access_token) {
           throw new Error('Token d\'accès manquant dans la réponse');
         }
         
-        //  Utilisation de la configuration centralisée
         this.setToken(data.access_token);
         console.log('✅ Authentification réussie');
         
@@ -114,7 +171,6 @@ async getEtatsSinistre() {
     }
   }
 
-  
   async apiCall(url, options = {}) {
     try {
       console.log('🌐 Appel API:', url);
@@ -203,7 +259,6 @@ async getEtatsSinistre() {
     }
   }
 
-
   formatDateForBackend(dateStr) {
     if (!dateStr || typeof dateStr !== 'string') return '';
     
@@ -241,7 +296,6 @@ async getEtatsSinistre() {
     }
   }
 
-  
   formatDateForFrontend(dateStr) {
     if (!dateStr || typeof dateStr !== 'string') return '';
     
@@ -270,8 +324,6 @@ async getEtatsSinistre() {
     }
   }
 
-  // Teste la connexion à l'API
-   
   async testConnection() {
     try {
       console.log('🔧 Test de connexion...');
@@ -310,7 +362,6 @@ async getEtatsSinistre() {
     }
   }
 
-  // Validation d'entrée pour éviter les injections
   validateInput(input, fieldName, maxLength = 255) {
     if (!input || typeof input !== 'string') {
       throw new Error(`${fieldName} est obligatoire`);
@@ -325,7 +376,6 @@ async getEtatsSinistre() {
       throw new Error(`${fieldName} ne peut pas dépasser ${maxLength} caractères`);
     }
     
-    // Vérification des caractères dangereux
     const dangerousChars = /[<>";&\\]/;
     if (dangerousChars.test(trimmedInput)) {
       throw new Error(`${fieldName} contient des caractères non autorisés`);
@@ -334,10 +384,31 @@ async getEtatsSinistre() {
     return trimmedInput;
   }
 
+  
+  validateFile(file, maxSizeMB = 5, allowedTypes = ['application/pdf', 'image/jpeg', 'image/png']) {
+    if (!file || !(file instanceof File)) {
+      throw new Error('Fichier invalide');
+    }
+    
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      throw new Error(`Le fichier ne peut pas dépasser ${maxSizeMB}MB (taille actuelle: ${Math.round(file.size / 1024 / 1024 * 100) / 100}MB)`);
+    }
+    
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error(`Type de fichier non autorisé. Types acceptés: ${allowedTypes.join(', ')}`);
+    }
+    
+    if (file.name.length > 255) {
+      throw new Error('Le nom du fichier est trop long (max 255 caractères)');
+    }
+    
+    return true;
+  }
+
   async rechercherParNumero(numSinistre, typeRecherche = 'EXACTE') {
     const validatedNumSinistre = this.validateInput(numSinistre, 'Le numéro de sinistre', 50);
     
-    // Validation du type de recherche
     const validTypes = ['EXACTE', 'CONTIENT', 'COMMENCE_PAR', 'SE_TERMINE_PAR'];
     if (!validTypes.includes(typeRecherche)) {
       typeRecherche = 'EXACTE';
@@ -417,6 +488,36 @@ async getEtatsSinistre() {
     return await this.apiCall(url);
   }
 
+ 
+  async rechercherParDates(dateDebut, dateFin, typePeriode = 'survenance', limit = 50) {
+    const validatedDateDebut = this.validateInput(dateDebut, 'La date de début', 10);
+    const validatedDateFin = this.validateInput(dateFin, 'La date de fin', 10);
+    
+    const formattedDateDebut = this.formatDateForBackend(validatedDateDebut);
+    const formattedDateFin = this.formatDateForBackend(validatedDateFin);
+    
+    if (!formattedDateDebut || !formattedDateFin) {
+      throw new Error('Format de dates invalide. Utilisez DD/MM/YYYY ou YYYY-MM-DD');
+    }
+    
+    const validTypesPeriode = ['survenance', 'declaration', 'ouverture'];
+    if (!validTypesPeriode.includes(typePeriode)) {
+      typePeriode = 'survenance';
+    }
+    
+    const validatedLimit = Math.max(1, Math.min(parseInt(limit) || 50, 100));
+    
+    const params = new URLSearchParams({
+      dateDebut: formattedDateDebut,
+      dateFin: formattedDateFin,
+      typePeriode: typePeriode,
+      limit: validatedLimit.toString()
+    });
+
+    const url = `${API_BASE_URL}/dates?${params}`;
+    return await this.apiCall(url);
+  }
+
   async rechercherCombine(criteres, typeRecherche = 'CONTIENT', limit = 50) {
     const criteresNettoyes = {};
     let hasValidCriteria = false;
@@ -466,6 +567,52 @@ async getEtatsSinistre() {
 
     const url = `${API_BASE_URL}/recherche-combinee?${params}`;
     return await this.apiCall(url);
+  }
+
+  
+  async getStatistiquesSinistres(filtres = {}) {
+    try {
+      console.log('📊 Récupération des statistiques des sinistres...');
+      
+      const params = new URLSearchParams();
+      
+      if (filtres.dateDebut) {
+        const formattedDate = this.formatDateForBackend(filtres.dateDebut);
+        if (formattedDate) params.append('dateDebut', formattedDate);
+      }
+      
+      if (filtres.dateFin) {
+        const formattedDate = this.formatDateForBackend(filtres.dateFin);
+        if (formattedDate) params.append('dateFin', formattedDate);
+      }
+      
+      if (filtres.etatSinistre && filtres.etatSinistre.trim()) {
+        params.append('etatSinistre', filtres.etatSinistre.trim());
+      }
+      
+      const url = `${API_BASE_URL}/statistiques${params.toString() ? '?' + params : ''}`;
+      const response = await this.apiCall(url);
+      
+      console.log('✅ Statistiques récupérées:', response.data);
+      
+      return response;
+    } catch (error) {
+      console.error('❌ Erreur récupération statistiques:', error);
+      
+      console.log('🔄 Utilisation des statistiques de fallback');
+      return {
+        data: {
+          totalSinistres: 0,
+          sinistresPeriode: 0,
+          repartitionEtats: {},
+          montantTotal: 0,
+          montantMoyen: 0,
+          delaiTraitementMoyen: 0
+        },
+        message: 'Statistiques (mode hors ligne)',
+        success: true
+      };
+    }
   }
 
   async creerSinistreSansLot(sinistreData) {
@@ -604,157 +751,155 @@ async getEtatsSinistre() {
     throw new Error('Impossible de récupérer les détails du sinistre');
   }
 
-async getTypesDeclaration() {
-  try {
-    console.log('📋 Récupération des types de déclaration...');
-    
-    const url = `${API_BASE_URL}/types-declaration`;
-    const response = await this.apiCall(url);
-    
-    console.log('✅ Types de déclaration récupérés:', response.data);
-    
-    return response;
-  } catch (error) {
-    console.error('❌ Erreur récupération types de déclaration:', error);
-    
-    console.log('🔄 Utilisation des types de fallback');
-    return {
-      data: [
-        { code: '21', libelle: 'Déclaration de maladie' },
-        { code: '22', libelle: 'Déclaration de maternité' },
-        { code: '23', libelle: 'Déclaration d\'optique' },
-        { code: '29', libelle: 'Déclaration clinique hors convention' },
-        { code: '30', libelle: 'PEC Prestataire Santé' },
-        { code: '36', libelle: 'Déclaration Soins Dentaires' },
-        { code: '38', libelle: 'Devis SPD' }
-      ],
-      message: 'Types de déclaration (mode hors ligne)',
-      success: true
-    };
+  async getTypesDeclaration() {
+    try {
+      console.log('📋 Récupération des types de déclaration...');
+      
+      const url = `${API_BASE_URL}/types-declaration`;
+      const response = await this.apiCall(url);
+      
+      console.log('✅ Types de déclaration récupérés:', response.data);
+      
+      return response;
+    } catch (error) {
+      console.error('❌ Erreur récupération types de déclaration:', error);
+      
+      console.log('🔄 Utilisation des types de fallback');
+      return {
+        data: [
+          { code: '21', libelle: 'Déclaration de maladie' },
+          { code: '22', libelle: 'Déclaration de maternité' },
+          { code: '23', libelle: 'Déclaration d\'optique' },
+          { code: '29', libelle: 'Déclaration clinique hors convention' },
+          { code: '30', libelle: 'PEC Prestataire Santé' },
+          { code: '36', libelle: 'Déclaration Soins Dentaires' },
+          { code: '38', libelle: 'Devis SPD' }
+        ],
+        message: 'Types de déclaration (mode hors ligne)',
+        success: true
+      };
+    }
   }
-}
+
   async genererDocumentSinistre(numPolice, numFiliale, numAffiliation, numSinistre) {
-  const validatedParams = {
-    numPolice: this.validateInput(numPolice, 'Le numéro de police', 50),
-    numFiliale: this.validateInput(numFiliale, 'Le numéro de filiale', 50),
-    numAffiliation: this.validateInput(numAffiliation, 'Le numéro d\'affiliation', 50),
-    numSinistre: this.validateInput(numSinistre, 'Le numéro de sinistre', 50)
-  };
-
-  console.log('📄 Génération de document PDF pour:', validatedParams);
-
-  try {
-    const url = `${API_BASE_URL}/${encodeURIComponent(validatedParams.numPolice)}/${encodeURIComponent(validatedParams.numFiliale)}/${encodeURIComponent(validatedParams.numAffiliation)}/${encodeURIComponent(validatedParams.numSinistre)}/document`;
-    console.log('🌐 URL de génération:', url);
-
-    const currentToken = getAuthToken();
-    if (!currentToken || !isTokenValid(currentToken)) {
-      throw new Error('Authentification requise pour générer le document');
-    }
-
-    // Headers corrigés pour éviter l'erreur 406
-    const headers = {
-      'Accept': '*/*',  // Accept tout type de contenu
-      'Authorization': `Bearer ${currentToken}`,
-      'Cache-Control': 'no-cache'
+    const validatedParams = {
+      numPolice: this.validateInput(numPolice, 'Le numéro de police', 50),
+      numFiliale: this.validateInput(numFiliale, 'Le numéro de filiale', 50),
+      numAffiliation: this.validateInput(numAffiliation, 'Le numéro d\'affiliation', 50),
+      numSinistre: this.validateInput(numSinistre, 'Le numéro de sinistre', 50)
     };
 
-    console.log('🔑 Headers envoyés:', headers);
+    console.log('📄 Génération de document PDF pour:', validatedParams);
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers,
-      credentials: 'include'
-    });
+    try {
+      const url = `${API_BASE_URL}/${encodeURIComponent(validatedParams.numPolice)}/${encodeURIComponent(validatedParams.numFiliale)}/${encodeURIComponent(validatedParams.numAffiliation)}/${encodeURIComponent(validatedParams.numSinistre)}/document`;
+      console.log('🌐 URL de génération:', url);
 
-    console.log('📥 Réponse génération PDF status:', response.status);
-    console.log('📥 Content-Type:', response.headers.get('content-type'));
+      const currentToken = getAuthToken();
+      if (!currentToken || !isTokenValid(currentToken)) {
+        throw new Error('Authentification requise pour générer le document');
+      }
 
-    if (response.status === 401) {
-      clearAuthToken();
-      throw new Error('Session expirée. Veuillez vous reconnecter.');
-    }
+      const headers = {
+        'Accept': '*/*',  
+        'Authorization': `Bearer ${currentToken}`,
+        'Cache-Control': 'no-cache'
+      };
 
-    if (response.status === 406) {
-      console.error('❌ Erreur 406 - Headers non acceptés');
-      console.log('📋 Headers de réponse:', [...response.headers.entries()]);
-      throw new Error('Format de réponse non accepté par le serveur. Vérifiez la configuration du backend.');
-    }
+      console.log('🔑 Headers envoyés:', headers);
 
-    if (!response.ok) {
-      let errorMessage = `Erreur ${response.status}`;
-      
-      try {
-        const contentType = response.headers.get('content-type');
-        console.log('❌ Content-Type de l\'erreur:', contentType);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+        credentials: 'include'
+      });
+
+      console.log('📥 Réponse génération PDF status:', response.status);
+      console.log('📥 Content-Type:', response.headers.get('content-type'));
+
+      if (response.status === 401) {
+        clearAuthToken();
+        throw new Error('Session expirée. Veuillez vous reconnecter.');
+      }
+
+      if (response.status === 406) {
+        console.error('❌ Erreur 406 - Headers non acceptés');
+        console.log('📋 Headers de réponse:', [...response.headers.entries()]);
+        throw new Error('Format de réponse non accepté par le serveur. Vérifiez la configuration du backend.');
+      }
+
+      if (!response.ok) {
+        let errorMessage = `Erreur ${response.status}`;
         
-        if (contentType && contentType.includes('application/json')) {
-          const errorData = await response.json();
-          console.log('❌ Données d\'erreur PDF (JSON):', errorData);
+        try {
+          const contentType = response.headers.get('content-type');
+          console.log('❌ Content-Type de l\'erreur:', contentType);
           
-          if (errorData.message && errorData.message.includes('mission')) {
-            console.log('🔍 ERREUR SPÉCIFIQUE CV DÉTECTÉE:', errorData.message);
-            throw new Error(`Problème mission CV: ${errorData.message}`);
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            console.log('❌ Données d\'erreur PDF (JSON):', errorData);
+            
+            if (errorData.message && errorData.message.includes('mission')) {
+              console.log('🔍 ERREUR SPÉCIFIQUE CV DÉTECTÉE:', errorData.message);
+              throw new Error(`Problème mission CV: ${errorData.message}`);
+            }
+            
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            } else if (errorData.error) {
+              errorMessage = errorData.error;
+            }
+          } else {
+            const errorText = await response.text();
+            console.log('❌ Données d\'erreur PDF (TEXT):', errorText);
+            errorMessage = errorText || errorMessage;
           }
-          
-          if (errorData.message) {
-            errorMessage = errorData.message;
-          } else if (errorData.error) {
-            errorMessage = errorData.error;
-          }
-        } else {
-          const errorText = await response.text();
-          console.log('❌ Données d\'erreur PDF (TEXT):', errorText);
-          errorMessage = errorText || errorMessage;
+        } catch (parseError) {
+          console.log('❌ Impossible de parser l\'erreur:', parseError);
+          errorMessage = `Erreur ${response.status}: ${response.statusText}`;
         }
-      } catch (parseError) {
-        console.log('❌ Impossible de parser l\'erreur:', parseError);
-        errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        
+        console.log('❌ Message d\'erreur final:', errorMessage);
+        throw new Error(errorMessage);
+      }
+
+      console.log('✅ Réponse OK - Lecture du blob...');
+      const blob = await response.blob();
+      console.log('📦 Taille du blob PDF:', blob.size, 'bytes');
+      console.log('📦 Type du blob:', blob.type);
+      
+      if (blob.size === 0) {
+        throw new Error('Le document généré est vide');
+      }
+
+      if (blob.type && !blob.type.includes('pdf') && !blob.type.includes('octet-stream')) {
+        console.warn('⚠️ Type MIME inattendu:', blob.type);
+        
+        if (blob.type.includes('json') || blob.type.includes('text')) {
+          const errorText = await blob.text();
+          console.log('❌ Erreur cachée dans le blob:', errorText);
+          throw new Error('Erreur serveur: ' + errorText);
+        }
+      }
+
+      console.log('✅ Document PDF généré avec succès');
+      return {
+        blob,
+        filename: `document_sinistre_${validatedParams.numSinistre}.pdf`,
+        success: true,
+        message: 'Document généré avec succès'
+      };
+
+    } catch (error) {
+      console.error('❌ Erreur génération PDF:', error);
+      
+      if (error.message && error.message.includes('mission')) {
+        console.error('🔴 ERREUR CV SPÉCIFIQUE:', error.message);
       }
       
-      console.log('❌ Message d\'erreur final:', errorMessage);
-      throw new Error(errorMessage);
+      throw error;
     }
-
-    console.log('✅ Réponse OK - Lecture du blob...');
-    const blob = await response.blob();
-    console.log('📦 Taille du blob PDF:', blob.size, 'bytes');
-    console.log('📦 Type du blob:', blob.type);
-    
-    if (blob.size === 0) {
-      throw new Error('Le document généré est vide');
-    }
-
-    // Vérification du type de blob plus flexible
-    if (blob.type && !blob.type.includes('pdf') && !blob.type.includes('octet-stream')) {
-      console.warn('⚠️ Type MIME inattendu:', blob.type);
-      
-      if (blob.type.includes('json') || blob.type.includes('text')) {
-        const errorText = await blob.text();
-        console.log('❌ Erreur cachée dans le blob:', errorText);
-        throw new Error('Erreur serveur: ' + errorText);
-      }
-    }
-
-    console.log('✅ Document PDF généré avec succès');
-    return {
-      blob,
-      filename: `document_sinistre_${validatedParams.numSinistre}.pdf`,
-      success: true,
-      message: 'Document généré avec succès'
-    };
-
-  } catch (error) {
-    console.error('❌ Erreur génération PDF:', error);
-    
-    // Gestion spécifique des erreurs CV
-    if (error.message && error.message.includes('mission')) {
-      console.error('🔴 ERREUR CV SPÉCIFIQUE:', error.message);
-    }
-    
-    throw error;
   }
-}
   
   downloadBlob(blob, filename) {
     try {
@@ -795,7 +940,28 @@ async getTypesDeclaration() {
     }
   }
 
- 
+
+  async telechargerFichierSinistre(numSinistre) {
+    try {
+      console.log('📥 Début téléchargement fichier pour sinistre:', numSinistre);
+      
+      const { blob, filename } = await this.getFichierSinistre(numSinistre);
+      
+      console.log('📁 Fichier récupéré:', filename, `(${blob.size} bytes)`);
+      
+      this.downloadBlob(blob, filename);
+      
+      return {
+        success: true,
+        message: `Téléchargement du fichier ${filename} initié`,
+        filename
+      };
+    } catch (error) {
+      console.error('❌ Erreur téléchargement fichier:', error);
+      throw error;
+    }
+  }
+
   handleAPIError(error) {
     const message = error?.message || '';
     
@@ -844,6 +1010,16 @@ async getTypesDeclaration() {
     }
     if (message.includes('La nature de la maladie ne peut pas être modifiée pour un sinistre')) {
       return message; 
+    }
+    
+    if (message.includes("Aucune pièce jointe n'est associée")) {
+      return message;
+    }
+    if (message.includes('Fichier non trouvé') || message.includes('File not found')) {
+      return 'Aucun fichier associé à ce sinistre';
+    }
+    if (message.includes('Format de fichier non supporté')) {
+      return 'Format de fichier non supporté. Seuls les PDF sont acceptés.';
     }
     
     if (message.includes('Aucune édition disponible pour l\'état du sinistre')) {
@@ -929,7 +1105,6 @@ async getTypesDeclaration() {
     return 'Une erreur inattendue s\'est produite. Veuillez réessayer ou contacter le support technique.';
   }
 
-  
   getServiceStats() {
     const currentToken = getAuthToken();
     return {
@@ -940,7 +1115,6 @@ async getTypesDeclaration() {
     };
   }
 
-  
   cleanup() {
     console.log('🧹 Nettoyage du SinistreService');
     this.token = null;
